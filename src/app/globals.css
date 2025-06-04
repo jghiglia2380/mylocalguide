@@ -1,12 +1,15 @@
 @import "tailwindcss";
 
-/* Craigslist-inspired minimal aesthetic - "looks like 1995, works like 2025" */
+/* Enhanced retro aesthetic - "looks like 1995, works like 2025" */
 :root {
   --background: #ffffff;
   --foreground: #000000;
   --link-color: #0000EE;
   --visited-color: #551A8B;
-  --header-bg: #CCCCCC;
+  --header-bg: #E8E8E8;
+  --border-color: #CCCCCC;
+  --hover-bg: #F0F0F0;
+  --accent-bg: #F5F5F5;
 }
 
 body {
@@ -14,29 +17,83 @@ body {
   color: var(--foreground);
   font-family: "Times New Roman", Times, serif;
   font-size: 14px;
-  line-height: 1.4;
+  line-height: 1.5;
   margin: 0;
   padding: 0;
 }
 
-/* Directory listing styles */
+/* Enhanced header styling */
+.site-header {
+  background: linear-gradient(to bottom, #F0F0F0, #E0E0E0);
+  border-bottom: 3px solid #000000;
+  padding: 12px 16px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.site-title {
+  font-size: 28px;
+  font-weight: bold;
+  color: #000000;
+  text-decoration: none;
+  margin: 0;
+  text-shadow: 1px 1px 0px #FFFFFF;
+  letter-spacing: -0.5px;
+}
+
+.site-subtitle {
+  font-size: 15px;
+  color: #444444;
+  font-style: italic;
+  margin: 2px 0 6px 0;
+  font-weight: normal;
+}
+
+/* Enhanced navigation */
+.nav-links {
+  font-size: 13px;
+  margin-top: 8px;
+  border-top: 1px solid #CCCCCC;
+  padding-top: 6px;
+}
+
+.nav-links a {
+  color: var(--link-color);
+  text-decoration: none;
+  margin-right: 16px;
+  font-weight: bold;
+  padding: 2px 4px;
+  border-radius: 2px;
+  transition: background-color 0.1s;
+}
+
+.nav-links a:hover {
+  background-color: #E0E0FF;
+  text-decoration: underline;
+}
+
+/* Enhanced directory listing styles */
 .directory-list {
   font-size: 13px;
-  line-height: 1.3;
+  line-height: 1.4;
+  background-color: var(--background);
 }
 
 .directory-item {
-  border-bottom: 1px solid #E0E0E0;
-  padding: 4px 0;
+  border-bottom: 1px dotted #CCCCCC;
+  padding: 6px 0;
+  transition: background-color 0.1s;
 }
 
 .directory-item:hover {
-  background-color: #F5F5F5;
+  background-color: var(--hover-bg);
+  padding-left: 4px;
+  border-left: 2px solid var(--link-color);
 }
 
 .directory-link {
   color: var(--link-color);
-  text-decoration: underline;
+  text-decoration: none;
+  font-weight: bold;
 }
 
 .directory-link:visited {
@@ -45,141 +102,190 @@ body {
 
 .directory-link:hover {
   color: #0000CC;
-}
-
-.category-header {
-  background-color: var(--header-bg);
-  font-weight: bold;
-  font-size: 16px;
-  padding: 6px 8px;
-  border-bottom: 2px solid #000000;
-  margin: 0;
-}
-
-.neighborhood-link {
-  color: #0066CC;
-  font-size: 12px;
-  text-decoration: none;
-}
-
-.neighborhood-link:hover {
   text-decoration: underline;
 }
 
-/* Search and filter styles */
+/* Enhanced category headers */
+.category-header {
+  background: linear-gradient(to bottom, #F8F8F8, #E8E8E8);
+  font-weight: bold;
+  font-size: 16px;
+  padding: 8px 12px;
+  border: 1px solid #CCCCCC;
+  border-bottom: 2px solid #888888;
+  margin: 0;
+  text-shadow: 1px 1px 0px #FFFFFF;
+  box-shadow: inset 0 1px 0 #FFFFFF;
+}
+
+/* Enhanced venue info */
+.venue-info {
+  font-size: 12px;
+  color: #666666;
+  margin-top: 2px;
+  font-style: italic;
+}
+
+/* Enhanced search area */
 .search-input {
-  border: 1px solid #808080;
-  padding: 4px;
+  border: 2px inset #E0E0E0;
+  padding: 6px 8px;
   font-size: 13px;
   font-family: "Times New Roman", Times, serif;
+  background-color: #FFFFFF;
+  border-radius: 0;
 }
 
 .search-input:focus {
   outline: none;
   border-color: #0000EE;
+  background-color: #FFFFFA;
 }
 
-.filter-button {
-  background-color: #E0E0E0;
-  border: 1px solid #808080;
-  padding: 2px 6px;
-  font-size: 11px;
-  cursor: pointer;
-  margin: 1px;
-  font-family: "Times New Roman", Times, serif;
-}
-
-.filter-button:hover {
-  background-color: #D0D0D0;
-}
-
-.filter-button.active {
-  background-color: #C0C0FF;
-  border-color: #0000EE;
-}
-
-/* Price indicators */
-.price-1::after { content: " $"; color: #008000; }
-.price-2::after { content: " $$"; color: #008000; }
-.price-3::after { content: " $$$"; color: #FF8000; }
-.price-4::after { content: " $$$$"; color: #FF0000; }
-
-/* Featured listing highlight */
-.featured {
-  background-color: #FFFFCC;
-  border-left: 4px solid #FFD700;
-}
-
-/* Table-like layout for venue info */
-.venue-info {
-  font-size: 12px;
-  color: #666666;
-}
-
-/* Minimal button styles */
+/* Enhanced buttons */
 .btn-primary {
-  background-color: #E0E0E0;
+  background: linear-gradient(to bottom, #F0F0F0, #E0E0E0);
   border: 2px outset #E0E0E0;
-  padding: 4px 8px;
+  padding: 6px 12px;
   font-size: 12px;
   cursor: pointer;
   font-family: "Times New Roman", Times, serif;
+  font-weight: bold;
+  text-shadow: 1px 1px 0px #FFFFFF;
 }
 
 .btn-primary:hover {
-  background-color: #D0D0D0;
+  background: linear-gradient(to bottom, #E8E8E8, #D8D8D8);
 }
 
 .btn-primary:active {
   border: 2px inset #E0E0E0;
+  background: linear-gradient(to bottom, #D8D8D8, #E8E8E8);
 }
 
-/* Header styling */
-.site-header {
-  background-color: var(--header-bg);
-  border-bottom: 2px solid #000000;
-  padding: 8px;
+/* Enhanced price indicators */
+.price-1::after { content: " $"; color: #228B22; font-weight: bold; }
+.price-2::after { content: " $$"; color: #FF8C00; font-weight: bold; }
+.price-3::after { content: " $$$"; color: #FF6347; font-weight: bold; }
+.price-4::after { content: " $$$$"; color: #DC143C; font-weight: bold; }
+
+/* Enhanced featured listing */
+.featured {
+  background: linear-gradient(to right, #FFFACD, #FFFFFF);
+  border-left: 4px solid #FFD700;
+  box-shadow: 0 1px 3px rgba(255, 215, 0, 0.3);
 }
 
-.site-title {
-  font-size: 24px;
-  font-weight: bold;
-  color: #000000;
+/* Enhanced filter buttons */
+.filter-button {
+  background: linear-gradient(to bottom, #F0F0F0, #E0E0E0);
+  border: 1px outset #E0E0E0;
+  padding: 3px 8px;
+  font-size: 11px;
+  cursor: pointer;
+  margin: 2px;
+  font-family: "Times New Roman", Times, serif;
+  border-radius: 2px;
+}
+
+.filter-button:hover {
+  background: linear-gradient(to bottom, #E8E8E8, #D8D8D8);
+}
+
+.filter-button.active {
+  background: linear-gradient(to bottom, #C0C0FF, #A0A0FF);
+  border-color: #0000EE;
+  border-style: inset;
+}
+
+/* Enhanced neighborhood links */
+.neighborhood-link {
+  color: #0066CC;
+  font-size: 12px;
   text-decoration: none;
-  margin: 0;
+  font-weight: bold;
 }
 
-.site-subtitle {
-  font-size: 14px;
-  color: #666666;
-  font-style: italic;
-  margin: 0;
-}
-
-/* Navigation */
-.nav-links {
-  font-size: 13px;
-  margin-top: 4px;
-}
-
-.nav-links a {
-  color: var(--link-color);
+.neighborhood-link:hover {
   text-decoration: underline;
-  margin-right: 12px;
+  color: #0044AA;
 }
 
-/* Responsive adjustments while maintaining the retro feel */
+/* Grid enhancements */
+.venue-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+  margin: 20px 0;
+}
+
+.venue-card {
+  border: 1px solid var(--border-color);
+  background-color: var(--background);
+  box-shadow: 1px 1px 3px rgba(0,0,0,0.1);
+}
+
+/* Enhanced responsive design */
 @media (max-width: 768px) {
   body {
     font-size: 13px;
   }
   
+  .site-header {
+    padding: 10px 12px;
+  }
+  
   .site-title {
-    font-size: 20px;
+    font-size: 24px;
+  }
+  
+  .site-subtitle {
+    font-size: 13px;
+  }
+  
+  .nav-links a {
+    margin-right: 12px;
+    display: inline-block;
+    margin-bottom: 4px;
   }
   
   .category-header {
     font-size: 14px;
-    padding: 4px 6px;
+    padding: 6px 8px;
   }
+  
+  .search-input {
+    width: 100%;
+    max-width: 250px;
+  }
+}
+
+/* Add some subtle animations */
+.directory-item, .btn-primary, .filter-button, .nav-links a {
+  transition: all 0.1s ease-in-out;
+}
+
+/* Ensure proper spacing */
+main {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Enhanced footer styling */
+footer {
+  margin-top: 40px;
+  padding: 16px;
+  border-top: 2px solid #CCCCCC;
+  background: linear-gradient(to bottom, #F8F8F8, #F0F0F0);
+  font-size: 11px;
+  color: #666666;
+}
+
+footer a {
+  color: var(--link-color);
+  text-decoration: none;
+}
+
+footer a:hover {
+  text-decoration: underline;
 }
