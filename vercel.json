@@ -1,9 +1,5 @@
 {
   "buildCommand": "npm run build",
   "outputDirectory": ".next",
-  "framework": "nextjs",
-  "env": {
-    "GOOGLE_PLACES_API_KEY": "@google-places-api-key",
-    "YELP_API_KEY": "@yelp-api-key"
-  }
+  "framework": "nextjs"
 }
