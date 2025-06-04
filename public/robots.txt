@@ -1,0 +1,13 @@
+# *
+User-agent: *
+Allow: /
+
+# *
+User-agent: *
+Disallow: /api/
+
+# Host
+Host: https://mylocalguide.co
+
+# Sitemaps
+Sitemap: https://mylocalguide.co/sitemap.xml

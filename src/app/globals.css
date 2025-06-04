@@ -1,0 +1,185 @@
+@import "tailwindcss";
+
+/* Craigslist-inspired minimal aesthetic - "looks like 1995, works like 2025" */
+:root {
+  --background: #ffffff;
+  --foreground: #000000;
+  --link-color: #0000EE;
+  --visited-color: #551A8B;
+  --header-bg: #CCCCCC;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: "Times New Roman", Times, serif;
+  font-size: 14px;
+  line-height: 1.4;
+  margin: 0;
+  padding: 0;
+}
+
+/* Directory listing styles */
+.directory-list {
+  font-size: 13px;
+  line-height: 1.3;
+}
+
+.directory-item {
+  border-bottom: 1px solid #E0E0E0;
+  padding: 4px 0;
+}
+
+.directory-item:hover {
+  background-color: #F5F5F5;
+}
+
+.directory-link {
+  color: var(--link-color);
+  text-decoration: underline;
+}
+
+.directory-link:visited {
+  color: var(--visited-color);
+}
+
+.directory-link:hover {
+  color: #0000CC;
+}
+
+.category-header {
+  background-color: var(--header-bg);
+  font-weight: bold;
+  font-size: 16px;
+  padding: 6px 8px;
+  border-bottom: 2px solid #000000;
+  margin: 0;
+}
+
+.neighborhood-link {
+  color: #0066CC;
+  font-size: 12px;
+  text-decoration: none;
+}
+
+.neighborhood-link:hover {
+  text-decoration: underline;
+}
+
+/* Search and filter styles */
+.search-input {
+  border: 1px solid #808080;
+  padding: 4px;
+  font-size: 13px;
+  font-family: "Times New Roman", Times, serif;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #0000EE;
+}
+
+.filter-button {
+  background-color: #E0E0E0;
+  border: 1px solid #808080;
+  padding: 2px 6px;
+  font-size: 11px;
+  cursor: pointer;
+  margin: 1px;
+  font-family: "Times New Roman", Times, serif;
+}
+
+.filter-button:hover {
+  background-color: #D0D0D0;
+}
+
+.filter-button.active {
+  background-color: #C0C0FF;
+  border-color: #0000EE;
+}
+
+/* Price indicators */
+.price-1::after { content: " $"; color: #008000; }
+.price-2::after { content: " $$"; color: #008000; }
+.price-3::after { content: " $$$"; color: #FF8000; }
+.price-4::after { content: " $$$$"; color: #FF0000; }
+
+/* Featured listing highlight */
+.featured {
+  background-color: #FFFFCC;
+  border-left: 4px solid #FFD700;
+}
+
+/* Table-like layout for venue info */
+.venue-info {
+  font-size: 12px;
+  color: #666666;
+}
+
+/* Minimal button styles */
+.btn-primary {
+  background-color: #E0E0E0;
+  border: 2px outset #E0E0E0;
+  padding: 4px 8px;
+  font-size: 12px;
+  cursor: pointer;
+  font-family: "Times New Roman", Times, serif;
+}
+
+.btn-primary:hover {
+  background-color: #D0D0D0;
+}
+
+.btn-primary:active {
+  border: 2px inset #E0E0E0;
+}
+
+/* Header styling */
+.site-header {
+  background-color: var(--header-bg);
+  border-bottom: 2px solid #000000;
+  padding: 8px;
+}
+
+.site-title {
+  font-size: 24px;
+  font-weight: bold;
+  color: #000000;
+  text-decoration: none;
+  margin: 0;
+}
+
+.site-subtitle {
+  font-size: 14px;
+  color: #666666;
+  font-style: italic;
+  margin: 0;
+}
+
+/* Navigation */
+.nav-links {
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+.nav-links a {
+  color: var(--link-color);
+  text-decoration: underline;
+  margin-right: 12px;
+}
+
+/* Responsive adjustments while maintaining the retro feel */
+@media (max-width: 768px) {
+  body {
+    font-size: 13px;
+  }
+  
+  .site-title {
+    font-size: 20px;
+  }
+  
+  .category-header {
+    font-size: 14px;
+    padding: 4px 6px;
+  }
+}
