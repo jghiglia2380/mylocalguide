@@ -63,9 +63,37 @@ let db: Database.Database;
 
 export function getDatabase() {
   if (!db) {
-    // Use persistent file-based database instead of in-memory
-    db = new Database('mylocalguide.db');
-    initializeDatabase();
+    // In serverless environments like Vercel, use in-memory database
+    // In development, try to use file-based database
+    try {
+      if (process.env.NODE_ENV === 'production') {
+        db = new Database(':memory:');
+      } else {
+        db = new Database('mylocalguide.db');
+      }
+      initializeDatabase();
+      // In production, seed with data since we're using in-memory database
+      if (process.env.NODE_ENV === 'production') {
+        try {
+          const { seedDatabase } = require('./seed-data');
+          seedDatabase();
+        } catch (error) {
+          console.log('Seeding skipped:', error);
+        }
+      }
+    } catch (error) {
+      // Fallback to in-memory if file access fails
+      console.log('Using in-memory database due to file access restrictions');
+      db = new Database(':memory:');
+      initializeDatabase();
+      // Seed the fallback database too
+      try {
+        const { seedDatabase } = require('./seed-data');
+        seedDatabase();
+      } catch (seedError) {
+        console.log('Seeding skipped in fallback:', seedError);
+      }
+    }
   }
   return db;
 }
