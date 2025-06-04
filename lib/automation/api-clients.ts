@@ -232,7 +232,321 @@ export class VenueDataAggregator {
   }
 }
 
+// OpenTable API Client
+export class OpenTableClient {
+  private client: AxiosInstance;
+  private apiKey: string;
+
+  constructor(apiKey?: string) {
+    this.apiKey = apiKey || process.env.OPENTABLE_API_KEY || '';
+    this.client = axios.create({
+      baseURL: 'https://platform.opentable.com/sync',
+      timeout: 10000,
+      headers: {
+        'Authorization': `Bearer ${this.apiKey}`,
+        'Content-Type': 'application/json'
+      },
+    });
+  }
+
+  async searchRestaurants(location: string = 'San Francisco, CA', limit: number = 50): Promise<any[]> {
+    await googleRateLimiter.consume(1);
+
+    try {
+      const response = await this.client.get('/listings', {
+        params: {
+          city: 'San Francisco',
+          state: 'CA',
+          country: 'US',
+          per_page: limit,
+          include_unavailable: false
+        }
+      });
+
+      return response.data.items || [];
+    } catch (error) {
+      console.error('OpenTable API error:', error);
+      return [];
+    }
+  }
+
+  async getRestaurantDetails(restaurantId: string): Promise<any> {
+    await googleRateLimiter.consume(1);
+
+    try {
+      const response = await this.client.get(`/listings/${restaurantId}`);
+      return response.data || {};
+    } catch (error) {
+      console.error('OpenTable Details API error:', error);
+      return {};
+    }
+  }
+}
+
+// TripAdvisor API Client
+export class TripAdvisorClient {
+  private client: AxiosInstance;
+  private apiKey: string;
+
+  constructor(apiKey?: string) {
+    this.apiKey = apiKey || process.env.TRIPADVISOR_API_KEY || '';
+    this.client = axios.create({
+      baseURL: 'https://api.content.tripadvisor.com/api/v1',
+      timeout: 10000,
+      headers: {
+        'accept': 'application/json',
+        'X-TripAdvisor-API-Key': this.apiKey
+      },
+    });
+  }
+
+  async searchLocations(query: string, location: string = 'San Francisco'): Promise<any[]> {
+    await yelpRateLimiter.consume(1);
+
+    try {
+      const response = await this.client.get('/location/search', {
+        params: {
+          searchQuery: `${query} ${location}`,
+          category: 'restaurants',
+          phone: '',
+          address: location,
+          latLong: '37.7749,-122.4194', // SF coordinates
+          radius: '10',
+          radiusUnit: 'mi',
+          language: 'en'
+        }
+      });
+
+      return response.data.data || [];
+    } catch (error) {
+      console.error('TripAdvisor API error:', error);
+      return [];
+    }
+  }
+
+  async getLocationDetails(locationId: string): Promise<any> {
+    await yelpRateLimiter.consume(1);
+
+    try {
+      const response = await this.client.get(`/location/${locationId}/details`, {
+        params: {
+          language: 'en',
+          currency: 'USD'
+        }
+      });
+
+      return response.data || {};
+    } catch (error) {
+      console.error('TripAdvisor Details API error:', error);
+      return {};
+    }
+  }
+
+  async getLocationReviews(locationId: string): Promise<any[]> {
+    await yelpRateLimiter.consume(1);
+
+    try {
+      const response = await this.client.get(`/location/${locationId}/reviews`, {
+        params: {
+          language: 'en'
+        }
+      });
+
+      return response.data.data || [];
+    } catch (error) {
+      console.error('TripAdvisor Reviews API error:', error);
+      return [];
+    }
+  }
+}
+
+// Airbnb Experiences API Client (using unofficial API)
+export class AirbnbExperiencesClient {
+  private client: AxiosInstance;
+
+  constructor() {
+    this.client = axios.create({
+      baseURL: 'https://www.airbnb.com/api/v3',
+      timeout: 10000,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (compatible; MyLocalGuideBot/1.0)',
+        'Accept': 'application/json'
+      },
+    });
+  }
+
+  async searchExperiences(location: string = 'San Francisco, CA', limit: number = 50): Promise<any[]> {
+    await yelpRateLimiter.consume(1);
+
+    try {
+      // Using Airbnb's search endpoint for experiences
+      const response = await this.client.get('/ExploreSearch', {
+        params: {
+          version: '1.8.1',
+          satori_version: '1.2.0',
+          source: 'EXPLORE',
+          refinement_paths: ['/experiences'],
+          query: location,
+          adults: 1,
+          price_max: 500,
+          items_per_grid: limit,
+          section_offset: 0,
+          supports_for_you_v3: true,
+          timezone_offset: -480, // PST offset
+          metadata_only: false,
+          is_standard_search: true,
+          fetch_filters: true,
+          has_zero_guest_treatment: false,
+          is_web_search: true,
+          refinement_search: false,
+          flexible_trip_lengths: [1],
+          date_picker_type: 'calendar',
+          search_type: 'filter_change'
+        }
+      });
+
+      // Extract experiences from the complex Airbnb response structure
+      const sections = response.data?.explore_tabs?.[0]?.sections || [];
+      const experiences = [];
+
+      for (const section of sections) {
+        if (section.listings) {
+          experiences.push(...section.listings);
+        }
+      }
+
+      return experiences.slice(0, limit);
+    } catch (error) {
+      console.error('Airbnb Experiences API error:', error);
+      return [];
+    }
+  }
+
+  async getExperienceDetails(experienceId: string): Promise<any> {
+    await yelpRateLimiter.consume(1);
+
+    try {
+      const response = await this.client.get('/pdp_listing_details', {
+        params: {
+          listing_id: experienceId,
+          adults: 1,
+          children: 0,
+          infants: 0
+        }
+      });
+
+      return response.data?.pdp_listing_detail || {};
+    } catch (error) {
+      console.error('Airbnb Experience Details API error:', error);
+      return {};
+    }
+  }
+}
+
+// Enhanced aggregator with new sources
+export class EnhancedVenueDataAggregator extends VenueDataAggregator {
+  private openTableClient: OpenTableClient;
+  private tripAdvisorClient: TripAdvisorClient;
+  private airbnbClient: AirbnbExperiencesClient;
+
+  constructor() {
+    super();
+    this.openTableClient = new OpenTableClient();
+    this.tripAdvisorClient = new TripAdvisorClient();
+    this.airbnbClient = new AirbnbExperiencesClient();
+  }
+
+  async searchAllSources(query: string, neighborhood?: string): Promise<{
+    google: any[];
+    yelp: any[];
+    openTable: any[];
+    tripAdvisor: any[];
+    airbnbExperiences: any[];
+  }> {
+    const baseResults = await this.searchVenuesByCategory(query, neighborhood);
+    
+    const [openTableResults, tripAdvisorResults, airbnbResults] = await Promise.all([
+      this.openTableClient.searchRestaurants(`${neighborhood}, San Francisco`),
+      this.tripAdvisorClient.searchLocations(query, `${neighborhood}, San Francisco`),
+      this.airbnbClient.searchExperiences(`${neighborhood}, San Francisco`)
+    ]);
+
+    return {
+      google: baseResults.google,
+      yelp: baseResults.yelp,
+      openTable: openTableResults,
+      tripAdvisor: tripAdvisorResults,
+      airbnbExperiences: airbnbResults
+    };
+  }
+
+  aggregateAllSourcesRating(
+    googleData: any, 
+    yelpData: any, 
+    openTableData: any, 
+    tripAdvisorData: any
+  ): {
+    aggregatedRating: number;
+    totalReviews: number;
+    confidence: number;
+    sources: string[];
+  } {
+    const ratings: Array<{rating: number, reviews: number, source: string}> = [];
+
+    if (googleData.rating) {
+      ratings.push({
+        rating: googleData.rating,
+        reviews: googleData.user_ratings_total || 0,
+        source: 'Google'
+      });
+    }
+
+    if (yelpData.rating) {
+      ratings.push({
+        rating: yelpData.rating,
+        reviews: yelpData.review_count || 0,
+        source: 'Yelp'
+      });
+    }
+
+    if (openTableData.score) {
+      ratings.push({
+        rating: openTableData.score,
+        reviews: openTableData.reviews_count || 0,
+        source: 'OpenTable'
+      });
+    }
+
+    if (tripAdvisorData.rating) {
+      ratings.push({
+        rating: tripAdvisorData.rating,
+        reviews: tripAdvisorData.num_reviews || 0,
+        source: 'TripAdvisor'
+      });
+    }
+
+    if (ratings.length === 0) {
+      return { aggregatedRating: 0, totalReviews: 0, confidence: 0, sources: [] };
+    }
+
+    const totalReviews = ratings.reduce((sum, r) => sum + r.reviews, 0);
+    const weightedRating = ratings.reduce((sum, r) => sum + (r.rating * r.reviews), 0) / totalReviews;
+    const confidence = Math.min(ratings.length * 0.25, 1.0); // Higher confidence with more sources
+
+    return {
+      aggregatedRating: Number(weightedRating.toFixed(2)),
+      totalReviews,
+      confidence: Number(confidence.toFixed(2)),
+      sources: ratings.map(r => r.source)
+    };
+  }
+}
+
 // Factory function for easy instantiation
 export function createVenueAggregator(): VenueDataAggregator {
   return new VenueDataAggregator();
+}
+
+export function createEnhancedVenueAggregator(): EnhancedVenueDataAggregator {
+  return new EnhancedVenueDataAggregator();
 }

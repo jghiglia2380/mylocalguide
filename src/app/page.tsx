@@ -39,7 +39,8 @@ export default function Home() {
       items: [
         { name: 'Live Entertainment', slug: 'live-entertainment', count: getCountByCategory('Live Entertainment') },
         { name: 'Arts & Culture', slug: 'arts-culture', count: getCountByCategory('Arts & Culture') },
-        { name: 'Outdoor Activities', slug: 'outdoor-activities', count: getCountByCategory('Outdoor Activities') }
+        { name: 'Outdoor Activities', slug: 'outdoor-activities', count: getCountByCategory('Outdoor Activities') },
+        { name: 'Experiences', slug: 'experiences', count: getCountByCategory('Experiences') }
       ]
     },
     {

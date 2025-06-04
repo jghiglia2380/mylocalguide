@@ -166,6 +166,7 @@ function initializeDatabase() {
     { name: 'Live Entertainment', slug: 'live-entertainment', description: 'Music venues, comedy clubs, and theaters' },
     { name: 'Arts & Culture', slug: 'arts-culture', description: 'Galleries, museums, and cultural centers' },
     { name: 'Outdoor Activities', slug: 'outdoor-activities', description: 'Parks, hiking trails, and recreational areas' },
+    { name: 'Experiences', slug: 'experiences', description: 'Local tours, classes, workshops, and unique activities' },
     
     // Services & Practical
     { name: 'Work Spaces', slug: 'work-spaces', description: 'Co-working spaces and study spots' },
