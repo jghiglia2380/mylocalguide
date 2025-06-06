@@ -1,8 +1,12 @@
-import { getDatabase, getVenuesByNeighborhood, getAllVenues } from '@lib/database';
+import { getDatabase, getVenuesByNeighborhood, getAllVenues } from '../../../../lib/database';
+import { FunFactsDB } from '../../../../lib/fun-facts-db';
+import { FunFactsSection } from '../../../components/FunFactsSection';
 import { notFound } from 'next/navigation';
 
 // Force dynamic rendering to always fetch fresh data
 export const dynamic = 'force-dynamic';
+
+import { Metadata } from 'next';
 
 interface NeighborhoodPageProps {
   params: Promise<{
@@ -11,8 +15,9 @@ interface NeighborhoodPageProps {
 }
 
 const neighborhoodMap: Record<string, string> = {
-  'mission-district': 'Mission District',
-  'castro': 'Castro',
+  'mission-district': 'The Mission',
+  'castro-district': 'Castro District',
+  'castro': 'Castro District',
   'marina-district': 'Marina District', 
   'north-beach': 'North Beach',
   'soma': 'SoMa',
@@ -20,12 +25,47 @@ const neighborhoodMap: Record<string, string> = {
   'lower-haight': 'Lower Haight',
   'chinatown': 'Chinatown',
   'financial-district': 'Financial District',
-  'nob-hill': 'Nob Hill'
+  'nob-hill': 'Nob Hill',
+  'russian-hill': 'Russian Hill',
+  'pacific-heights': 'Pacific Heights',
+  'union-square': 'Union Square',
+  'tenderloin': 'Tenderloin',
+  'civic-center': 'Civic Center',
+  'western-addition': 'Western Addition',
+  'japantown': 'Japantown',
+  'inner-richmond': 'Inner Richmond',
+  'outer-richmond': 'Outer Richmond',
+  'inner-sunset': 'Inner Sunset',
+  'outer-sunset': 'Outer Sunset',
+  'bernal-heights': 'Bernal Heights',
+  'potrero-hill': 'Potrero Hill',
+  'dogpatch': 'Dogpatch',
+  'bayview': 'Bayview-Hunters Point',
+  'excelsior': 'Excelsior',
+  'glen-park': 'Glen Park',
+  'noe-valley': 'Noe Valley',
+  'outer-mission': 'Outer Mission'
 };
+
+export async function generateMetadata({ params }: NeighborhoodPageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const neighborhoodName = neighborhoodMap[slug] || 'Unknown';
+  
+  return {
+    title: `${neighborhoodName} San Francisco - Local Guide, Fun Facts & Hidden Gems | MyLocalGuide`,
+    description: `Discover ${neighborhoodName} in San Francisco: local restaurants, bars, cafes, and insider fun facts. Learn about the history, culture, and hidden secrets only locals know.`,
+    keywords: `${neighborhoodName}, San Francisco, restaurants, bars, cafes, fun facts, local guide, hidden gems, history, culture`,
+    openGraph: {
+      title: `${neighborhoodName} Local Guide & Fun Facts`,
+      description: `Your insider guide to ${neighborhoodName} - discover the best spots and learn fascinating local history and secrets.`,
+      type: 'website',
+    }
+  };
+}
 
 export default async function NeighborhoodPage({ params }: NeighborhoodPageProps) {
   const { slug } = await params;
-  getDatabase(); // Initialize database
+  const db = getDatabase(); // Initialize database
   
   const neighborhoodName = neighborhoodMap[slug];
   if (!neighborhoodName) {
@@ -34,6 +74,25 @@ export default async function NeighborhoodPage({ params }: NeighborhoodPageProps
 
   const venues = getVenuesByNeighborhood(neighborhoodName);
   const allVenues = getAllVenues();
+
+  // Get neighborhood ID and fun facts
+  let neighborhoodId: number | null = null;
+  let funFacts: any[] = [];
+  
+  try {
+    const neighborhoodStmt = db.prepare(`
+      SELECT id FROM neighborhoods WHERE name = ? OR name LIKE ?
+    `);
+    const neighborhood = neighborhoodStmt.get(neighborhoodName, `%${neighborhoodName}%`) as { id: number } | undefined;
+    
+    if (neighborhood) {
+      neighborhoodId = neighborhood.id;
+      const funFactsDB = new FunFactsDB(db);
+      funFacts = funFactsDB.getFactsByNeighborhood(neighborhoodId);
+    }
+  } catch (error) {
+    console.error('Error fetching fun facts:', error);
+  }
 
   // Group venues by category
   const venuesByCategory = venues.reduce((acc: any, venue: any) => {
@@ -74,7 +133,7 @@ export default async function NeighborhoodPage({ params }: NeighborhoodPageProps
         </h1>
 
         {/* Neighborhood Description */}
-        {neighborhoodName === 'Mission District' && (
+        {neighborhoodName === 'The Mission' && (
           <div style={{ padding: '8px', backgroundColor: '#F5F5F5', border: '1px solid #CCCCCC', marginBottom: '20px', fontSize: '13px' }}>
             Vibrant Latino culture, world-class street art, and the highest concentration of excellent restaurants per capita in SF. 
             From authentic taquerias to Michelin-starred dining, the Mission has it all.
@@ -100,6 +159,11 @@ export default async function NeighborhoodPage({ params }: NeighborhoodPageProps
             Little Italy meets literary history. Authentic Italian delis, historic cafes, and old-school San Francisco atmosphere. 
             Home to City Lights Books and generations of North Beach families.
           </div>
+        )}
+
+        {/* Fun Facts Section */}
+        {funFacts.length > 0 && (
+          <FunFactsSection facts={funFacts} neighborhoodName={neighborhoodName} />
         )}
 
         {/* Venues by Category */}

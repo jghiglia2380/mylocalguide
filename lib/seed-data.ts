@@ -1,11 +1,12 @@
 import { getDatabase, insertVenue } from '@lib/database';
+import { seedHotels } from './seed-hotels';
 
 export const realSFVenues = [
   // Mission District Restaurants
   {
     name: "La Taqueria",
     address: "2889 Mission St, San Francisco, CA 94110",
-    neighborhood: "Mission District",
+    neighborhood: "The Mission",
     category: "Restaurants",
     subcategory: "Mexican",
     description: "James Beard Foundation 'classic' American restaurant. Named best burrito-maker in America by FiveThirtyEight. No-frills taqueria serving hulking Mission-style burritos since 1973.",
@@ -22,7 +23,7 @@ export const realSFVenues = [
   {
     name: "Foreign Cinema",
     address: "2534 Mission St, San Francisco, CA 94110",
-    neighborhood: "Mission District", 
+    neighborhood: "The Mission", 
     category: "Restaurants",
     subcategory: "California-Mediterranean",
     description: "SF Chronicle 'Top 100 Restaurant' for 18 consecutive years. California-Mediterranean menu with full oyster bar. Movies screened on outdoor patio. Iconic Mission dining destination.",
@@ -39,7 +40,7 @@ export const realSFVenues = [
   {
     name: "Lazy Bear",
     address: "3416 19th St, San Francisco, CA 94110",
-    neighborhood: "Mission District",
+    neighborhood: "The Mission",
     category: "Restaurants", 
     subcategory: "Contemporary American",
     description: "Two Michelin-starred restaurant featuring communal dining experience. Multi-course tasting menu with creative, seasonal dishes. SF culinary institution requiring advance reservations.",
@@ -56,7 +57,7 @@ export const realSFVenues = [
   {
     name: "Rintaro",
     address: "82 14th St, San Francisco, CA 94103",
-    neighborhood: "Mission District",
+    neighborhood: "The Mission",
     category: "Restaurants",
     subcategory: "Japanese",
     description: "Perfect Japanese izakaya by Sylvan Mishima Brackett. Traditional atmosphere with modern execution. Exceptional sake selection and authentic Japanese small plates in intimate setting.",
@@ -181,7 +182,7 @@ export const realSFVenues = [
   {
     name: "Sightglass Coffee - Mission",
     address: "3014 20th St, San Francisco, CA 94110",
-    neighborhood: "Mission District",
+    neighborhood: "The Mission",
     category: "Cafes & Coffee",
     subcategory: "Coffee Roastery",
     description: "Neighborhood coffee bar and roastery. Industrial-chic space with in-house roasting. Popular with locals and laptop workers. High-quality single-origin and blends.",
@@ -325,7 +326,7 @@ export const realSFVenues = [
   {
     name: "Dolores Park",
     address: "Dolores St & 19th St, San Francisco, CA 94114",
-    neighborhood: "Mission District",
+    neighborhood: "The Mission",
     category: "Outdoor Activities",
     subcategory: "Park",
     description: "Popular hilltop park with stunning city views and vibrant weekend scene. Perfect for picnics, people-watching, and sunny day lounging. Food trucks and local vendors.",
@@ -541,7 +542,7 @@ export const realSFVenues = [
   {
     name: "Rainbow Grocery",
     address: "1745 Folsom St, San Francisco, CA 94103",
-    neighborhood: "Mission District",
+    neighborhood: "The Mission",
     category: "Specialty Food",
     subcategory: "Cooperative Grocery",
     description: "Worker-owned cooperative grocery store with extensive organic, local, and bulk foods. Vegetarian/vegan friendly with amazing cheese and wine selection.",
@@ -704,14 +705,16 @@ export function seedDatabase() {
   
   const db = getDatabase();
   
-  // In development, we allow reseeding. In production, check for existing venues
-  if (process.env.NODE_ENV === 'production') {
-    const existingVenues = db.prepare('SELECT COUNT(*) as count FROM venues').get() as { count: number };
-    
-    if (existingVenues.count > 0) {
-      console.log(`Database already has ${existingVenues.count} venues. Skipping seed.`);
-      return existingVenues.count;
-    }
+  // Check if we need to seed venues
+  const existingVenues = db.prepare('SELECT COUNT(*) as count FROM venues').get() as { count: number };
+  
+  // If we have fewer venues than expected, reseed
+  if (existingVenues.count < realSFVenues.length) {
+    console.log(`Database has ${existingVenues.count} venues, expecting ${realSFVenues.length}. Reseeding...`);
+    db.prepare('DELETE FROM venues').run();
+  } else {
+    console.log(`Database already has ${existingVenues.count} venues. Skipping seed.`);
+    return existingVenues.count;
   }
   
   const successCount = realSFVenues.reduce((count, venue) => {
@@ -725,5 +728,10 @@ export function seedDatabase() {
   }, 0);
 
   console.log(`Successfully seeded ${successCount} venues out of ${realSFVenues.length} total venues.`);
-  return successCount;
+  
+  // Also seed hotels
+  const hotelCount = seedHotels();
+  console.log(`Successfully seeded ${hotelCount} hotels.`);
+  
+  return successCount + hotelCount;
 }

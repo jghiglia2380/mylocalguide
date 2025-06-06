@@ -1,6 +1,18 @@
 import Database from 'better-sqlite3';
 import { readFileSync } from 'fs';
 import { join } from 'path';
+import { State, City, CityWithState, VenueWithLocation, NeighborhoodWithLocation } from './types/location';
+import { Hotel, HotelWithLocation, HotelFeature, HotelWithFeatures, AffiliateLink, HotelSearchFilters } from './types/hotel';
+import { 
+  Neighborhood, 
+  NeighborhoodWithTags, 
+  NeighborhoodTag, 
+  NeighborhoodGuide, 
+  NeighborhoodStats,
+  NeighborhoodSearchFilters,
+  parseCharacteristics,
+  parseBestFor 
+} from './types/neighborhood';
 
 // Database types following the schema from the specifications
 export interface Venue {
@@ -36,7 +48,7 @@ export interface Category {
   meta_description: string;
 }
 
-export interface Neighborhood {
+export interface NeighborhoodDB {
   id: number;
   name: string;
   slug: string;
@@ -99,9 +111,12 @@ function initializeDatabase() {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL,
       slug TEXT UNIQUE NOT NULL,
+      city_id INTEGER,
       city TEXT NOT NULL DEFAULT 'San Francisco',
       description TEXT,
-      boundary_coords TEXT
+      boundary_coords TEXT,
+      active INTEGER DEFAULT 1,
+      FOREIGN KEY (city_id) REFERENCES cities(id)
     );
 
     CREATE TABLE IF NOT EXISTS tags (
@@ -117,6 +132,7 @@ function initializeDatabase() {
       name TEXT NOT NULL,
       address TEXT NOT NULL,
       neighborhood TEXT NOT NULL,
+      city_id INTEGER,
       category TEXT NOT NULL,
       subcategory TEXT,
       description TEXT,
@@ -132,7 +148,8 @@ function initializeDatabase() {
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       featured INTEGER DEFAULT 0,
-      active INTEGER DEFAULT 1
+      active INTEGER DEFAULT 1,
+      FOREIGN KEY (city_id) REFERENCES cities(id)
     );
 
     CREATE TABLE IF NOT EXISTS venue_tags (
@@ -147,6 +164,80 @@ function initializeDatabase() {
     CREATE INDEX IF NOT EXISTS idx_venues_category ON venues(category);
     CREATE INDEX IF NOT EXISTS idx_venues_featured ON venues(featured);
     CREATE INDEX IF NOT EXISTS idx_venues_active ON venues(active);
+
+    -- States table
+    CREATE TABLE IF NOT EXISTS states (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      code TEXT UNIQUE NOT NULL,
+      slug TEXT UNIQUE NOT NULL,
+      active INTEGER DEFAULT 1,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
+    -- Cities table  
+    CREATE TABLE IF NOT EXISTS cities (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      slug TEXT NOT NULL,
+      state_code TEXT NOT NULL,
+      county TEXT,
+      population INTEGER,
+      latitude REAL,
+      longitude REAL,
+      timezone TEXT,
+      is_capital INTEGER DEFAULT 0,
+      is_major_tourist_city INTEGER DEFAULT 0,
+      active INTEGER DEFAULT 1,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (state_code) REFERENCES states(code),
+      UNIQUE(slug, state_code)
+    );
+
+    -- Hotels table
+    CREATE TABLE IF NOT EXISTS hotels (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      slug TEXT UNIQUE NOT NULL,
+      city_id INTEGER,
+      address TEXT,
+      latitude REAL,
+      longitude REAL,
+      star_rating INTEGER,
+      featured INTEGER DEFAULT 0,
+      active INTEGER DEFAULT 1,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (city_id) REFERENCES cities(id)
+    );
+
+    -- Affiliate links table
+    CREATE TABLE IF NOT EXISTS affiliate_links (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      entity_type TEXT NOT NULL,
+      entity_id INTEGER NOT NULL,
+      affiliate_network TEXT NOT NULL,
+      link_url TEXT NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
+    -- Create basic views
+    CREATE VIEW IF NOT EXISTS venues_with_location AS
+    SELECT v.*, c.name as city_name, c.slug as city_slug, s.name as state_name, s.code as state_code, s.slug as state_slug
+    FROM venues v
+    LEFT JOIN cities c ON v.city_id = c.id
+    LEFT JOIN states s ON c.state_code = s.code;
+
+    CREATE VIEW IF NOT EXISTS neighborhoods_with_location AS  
+    SELECT n.*, c.name as city_name, c.slug as city_slug, s.name as state_name, s.code as state_code, s.slug as state_slug
+    FROM neighborhoods n
+    LEFT JOIN cities c ON n.city_id = c.id
+    LEFT JOIN states s ON c.state_code = s.code;
+
+    CREATE VIEW IF NOT EXISTS hotels_with_location AS
+    SELECT h.*, c.name as city_name, c.slug as city_slug, s.name as state_name, s.code as state_code, s.slug as state_slug  
+    FROM hotels h
+    LEFT JOIN cities c ON h.city_id = c.id
+    LEFT JOIN states s ON c.state_code = s.code;
   `);
 
   // Insert initial categories based on specifications
@@ -188,9 +279,26 @@ function initializeDatabase() {
     );
   });
 
+  // Insert initial states and cities
+  const insertState = db.prepare(`
+    INSERT OR IGNORE INTO states (name, code, slug)
+    VALUES (?, ?, ?)
+  `);
+  
+  const insertCity = db.prepare(`
+    INSERT OR IGNORE INTO cities (name, slug, state_code, latitude, longitude, is_major_tourist_city)
+    VALUES (?, ?, ?, ?, ?, ?)
+  `);
+
+  // Add California state
+  insertState.run('California', 'CA', 'california');
+  
+  // Add San Francisco city  
+  insertCity.run('San Francisco', 'san-francisco', 'CA', 37.7749, -122.4194, 1);
+
   // Insert SF neighborhoods based on research
   const neighborhoods = [
-    { name: 'Mission District', slug: 'mission', description: 'Vibrant Latino culture, street art, and the best restaurants per capita in SF' },
+    { name: 'The Mission', slug: 'mission', description: 'Vibrant Latino culture, street art, and the best restaurants per capita in SF' },
     { name: 'Castro', slug: 'castro', description: 'Historic LGBTQ+ neighborhood with great dining and nightlife' },
     { name: 'Marina District', slug: 'marina', description: 'Upscale waterfront neighborhood with fitness culture and restaurants' },
     { name: 'North Beach', slug: 'north-beach', description: 'Italian heritage, authentic delis, and classic San Francisco atmosphere' },
@@ -203,12 +311,16 @@ function initializeDatabase() {
   ];
 
   const insertNeighborhood = db.prepare(`
-    INSERT OR IGNORE INTO neighborhoods (name, slug, city, description)
-    VALUES (?, ?, ?, ?)
+    INSERT OR IGNORE INTO neighborhoods (name, slug, city_id, city, description)
+    VALUES (?, ?, ?, ?, ?)
   `);
 
+  // Get SF city ID
+  const sfCity = db.prepare('SELECT id FROM cities WHERE slug = ?').get('san-francisco') as { id: number };
+  const sfCityId = sfCity?.id || 1;
+
   neighborhoods.forEach(hood => {
-    insertNeighborhood.run(hood.name, hood.slug, 'San Francisco', hood.description);
+    insertNeighborhood.run(hood.name, hood.slug, sfCityId, 'San Francisco', hood.description);
   });
 
   // Insert tags for filtering system
@@ -282,4 +394,456 @@ export function insertVenue(venue: Omit<Venue, 'id' | 'created_at' | 'updated_at
     venue.demographic_tags, venue.feature_tags, venue.lat, venue.lng,
     venue.featured ? 1 : 0, venue.active ? 1 : 0
   );
+}
+
+// Multi-city helper functions
+export function getAllStates(): State[] {
+  const db = getDatabase();
+  return db.prepare('SELECT * FROM states ORDER BY name ASC').all() as State[];
+}
+
+export function getStateBySlug(slug: string): State | undefined {
+  const db = getDatabase();
+  return db.prepare('SELECT * FROM states WHERE slug = ?').get(slug) as State | undefined;
+}
+
+export function getCitiesByState(stateCode: string): City[] {
+  const db = getDatabase();
+  return db.prepare(`
+    SELECT * FROM cities 
+    WHERE state_code = ? 
+    ORDER BY is_capital DESC, is_major_tourist_city DESC, name ASC
+  `).all(stateCode) as City[];
+}
+
+export function getCityBySlug(slug: string): CityWithState | undefined {
+  const db = getDatabase();
+  return db.prepare(`
+    SELECT 
+      c.*,
+      s.name as state_name,
+      s.slug as state_slug
+    FROM cities c
+    JOIN states s ON c.state_code = s.code
+    WHERE c.slug = ?
+  `).get(slug) as CityWithState | undefined;
+}
+
+export function getVenuesByCity(cityId: number, limit?: number): VenueWithLocation[] {
+  const db = getDatabase();
+  const query = limit 
+    ? 'SELECT * FROM venues_with_location WHERE city_id = ? AND active = 1 ORDER BY venue_score DESC, rating DESC LIMIT ?'
+    : 'SELECT * FROM venues_with_location WHERE city_id = ? AND active = 1 ORDER BY venue_score DESC, rating DESC';
+  
+  return limit 
+    ? db.prepare(query).all(cityId, limit) as VenueWithLocation[]
+    : db.prepare(query).all(cityId) as VenueWithLocation[];
+}
+
+export function getVenuesByCityAndCategory(cityId: number, category: string): VenueWithLocation[] {
+  const db = getDatabase();
+  return db.prepare(`
+    SELECT * FROM venues_with_location 
+    WHERE city_id = ? AND category = ? AND active = 1 
+    ORDER BY venue_score DESC, rating DESC
+  `).all(cityId, category) as VenueWithLocation[];
+}
+
+export function getVenuesByCityAndNeighborhood(cityId: number, neighborhood: string): VenueWithLocation[] {
+  const db = getDatabase();
+  return db.prepare(`
+    SELECT * FROM venues_with_location 
+    WHERE city_id = ? AND neighborhood = ? AND active = 1 
+    ORDER BY venue_score DESC, rating DESC
+  `).all(cityId, neighborhood) as VenueWithLocation[];
+}
+
+export function getNeighborhoodsByCity(cityId: number): NeighborhoodWithLocation[] {
+  const db = getDatabase();
+  return db.prepare(`
+    SELECT * FROM neighborhoods_with_location 
+    WHERE city_id = ? 
+    ORDER BY name ASC
+  `).all(cityId) as NeighborhoodWithLocation[];
+}
+
+export function getCapitalCities(): CityWithState[] {
+  const db = getDatabase();
+  return db.prepare(`
+    SELECT 
+      c.*,
+      s.name as state_name,
+      s.slug as state_slug
+    FROM cities c
+    JOIN states s ON c.state_code = s.code
+    WHERE c.is_capital = 1
+    ORDER BY s.name ASC
+  `).all() as CityWithState[];
+}
+
+export function getTouristCities(): CityWithState[] {
+  const db = getDatabase();
+  return db.prepare(`
+    SELECT 
+      c.*,
+      s.name as state_name,
+      s.slug as state_slug
+    FROM cities c
+    JOIN states s ON c.state_code = s.code
+    WHERE c.is_major_tourist_city = 1
+    ORDER BY s.name ASC, c.name ASC
+  `).all() as CityWithState[];
+}
+
+export function searchVenuesByCity(cityId: number, query: string): VenueWithLocation[] {
+  const db = getDatabase();
+  return db.prepare(`
+    SELECT DISTINCT vwl.*
+    FROM venues_with_location vwl
+    JOIN venue_search vs ON vwl.id = vs.venue_id
+    WHERE vwl.city_id = ? AND venue_search MATCH ?
+    ORDER BY vs.rank
+    LIMIT 20
+  `).all(cityId, query) as VenueWithLocation[];
+}
+
+// Hotel helper functions
+export function getAllHotels(): Hotel[] {
+  const db = getDatabase();
+  return db.prepare('SELECT * FROM hotels WHERE active = 1 ORDER BY featured DESC, star_rating DESC, name ASC').all() as Hotel[];
+}
+
+export function getHotelsByCity(cityId: number, filters?: HotelSearchFilters): HotelWithLocation[] {
+  const db = getDatabase();
+  let query = 'SELECT * FROM hotels_with_location WHERE city_id = ? AND active = 1';
+  const params: any[] = [cityId];
+
+  if (filters?.price_range) {
+    query += ' AND price_range = ?';
+    params.push(filters.price_range);
+  }
+
+  if (filters?.star_rating) {
+    query += ' AND star_rating >= ?';
+    params.push(filters.star_rating);
+  }
+
+  // Sort by
+  const sortBy = filters?.sort_by || 'featured';
+  const sortOrder = filters?.sort_order || 'desc';
+  
+  switch (sortBy) {
+    case 'price':
+      query += ` ORDER BY avg_nightly_rate ${sortOrder}, name ASC`;
+      break;
+    case 'rating':
+      query += ` ORDER BY star_rating ${sortOrder}, name ASC`;
+      break;
+    case 'name':
+      query += ` ORDER BY name ${sortOrder}`;
+      break;
+    default:
+      query += ' ORDER BY featured DESC, star_rating DESC, name ASC';
+  }
+
+  return db.prepare(query).all(...params) as HotelWithLocation[];
+}
+
+export function getHotelBySlug(slug: string): HotelWithLocation | undefined {
+  const db = getDatabase();
+  return db.prepare('SELECT * FROM hotels_with_location WHERE slug = ? AND active = 1').get(slug) as HotelWithLocation | undefined;
+}
+
+export function getHotelById(id: number): HotelWithLocation | undefined {
+  const db = getDatabase();
+  return db.prepare('SELECT * FROM hotels_with_location WHERE id = ? AND active = 1').get(id) as HotelWithLocation | undefined;
+}
+
+export function getHotelFeatures(): HotelFeature[] {
+  const db = getDatabase();
+  return db.prepare('SELECT * FROM hotel_features ORDER BY category, name').all() as HotelFeature[];
+}
+
+export function getHotelFeaturesById(hotelId: number): HotelFeature[] {
+  const db = getDatabase();
+  return db.prepare(`
+    SELECT hf.*
+    FROM hotel_features hf
+    JOIN hotel_hotel_features hhf ON hf.id = hhf.feature_id
+    WHERE hhf.hotel_id = ?
+    ORDER BY hf.category, hf.name
+  `).all(hotelId) as HotelFeature[];
+}
+
+export function getHotelWithFeatures(slug: string): HotelWithFeatures | undefined {
+  const hotel = getHotelBySlug(slug);
+  if (!hotel) return undefined;
+
+  const features = getHotelFeaturesById(hotel.id);
+  return { ...hotel, features };
+}
+
+export function getFeaturedHotels(limit = 10): HotelWithLocation[] {
+  const db = getDatabase();
+  return db.prepare(`
+    SELECT * FROM hotels_with_location 
+    WHERE featured = 1 AND active = 1 
+    ORDER BY star_rating DESC, name ASC 
+    LIMIT ?
+  `).all(limit) as HotelWithLocation[];
+}
+
+export function getHotelsByPriceRange(priceRange: 'budget' | 'mid-range' | 'luxury', limit = 20): HotelWithLocation[] {
+  const db = getDatabase();
+  return db.prepare(`
+    SELECT * FROM hotels_with_location 
+    WHERE price_range = ? AND active = 1 
+    ORDER BY star_rating DESC, name ASC 
+    LIMIT ?
+  `).all(priceRange, limit) as HotelWithLocation[];
+}
+
+export function searchHotels(query: string, cityId?: number): HotelWithLocation[] {
+  const db = getDatabase();
+  let sql = `
+    SELECT * FROM hotels_with_location 
+    WHERE active = 1 AND (
+      name LIKE ? OR 
+      address LIKE ? OR 
+      description LIKE ?
+    )
+  `;
+  const searchTerm = `%${query}%`;
+  const params: (string | number)[] = [searchTerm, searchTerm, searchTerm];
+
+  if (cityId) {
+    sql += ' AND city_id = ?';
+    params.push(cityId);
+  }
+
+  sql += ' ORDER BY star_rating DESC, name ASC LIMIT 20';
+
+  return db.prepare(sql).all(...params) as HotelWithLocation[];
+}
+
+// Affiliate link functions
+export function getAffiliateLinksForHotel(hotelId: number): AffiliateLink[] {
+  const db = getDatabase();
+  return db.prepare(`
+    SELECT * FROM affiliate_links 
+    WHERE entity_type = 'hotel' AND entity_id = ? AND active = 1
+    ORDER BY commission_rate DESC
+  `).all(hotelId) as AffiliateLink[];
+}
+
+export function createAffiliateLink(link: Omit<AffiliateLink, 'id' | 'created_at' | 'updated_at'>): number {
+  const db = getDatabase();
+  const insert = db.prepare(`
+    INSERT INTO affiliate_links (
+      entity_type, entity_id, affiliate_network, affiliate_id, 
+      base_url, tracking_params, commission_rate, cookie_duration, active
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `);
+  
+  const result = insert.run(
+    link.entity_type,
+    link.entity_id,
+    link.affiliate_network,
+    link.affiliate_id,
+    link.base_url,
+    link.tracking_params || null,
+    link.commission_rate || null,
+    link.cookie_duration || null,
+    link.active ? 1 : 0
+  );
+  
+  return result.lastInsertRowid as number;
+}
+
+export function trackAffiliateClick(affiliateLinkId: number, userIp?: string, userAgent?: string, referrer?: string): void {
+  const db = getDatabase();
+  const insert = db.prepare(`
+    INSERT INTO affiliate_clicks (affiliate_link_id, user_ip, user_agent, referrer)
+    VALUES (?, ?, ?, ?)
+  `);
+  
+  insert.run(affiliateLinkId, userIp || null, userAgent || null, referrer || null);
+}
+
+export function insertHotel(hotel: Omit<Hotel, 'id' | 'created_at' | 'updated_at'>): number {
+  const db = getDatabase();
+  const insert = db.prepare(`
+    INSERT INTO hotels (
+      name, slug, address, city_id, latitude, longitude, star_rating,
+      description, amenities, photos, website, phone, email, price_range,
+      avg_nightly_rate, total_rooms, booking_url, tripadvisor_id, google_place_id,
+      booking_com_id, expedia_id, hotels_com_id, agoda_id, featured, active
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `);
+  
+  const result = insert.run(
+    hotel.name, hotel.slug, hotel.address, hotel.city_id,
+    hotel.latitude || null, hotel.longitude || null, hotel.star_rating || null,
+    hotel.description || null, hotel.amenities || null, hotel.photos || null,
+    hotel.website || null, hotel.phone || null, hotel.email || null,
+    hotel.price_range || null, hotel.avg_nightly_rate || null, hotel.total_rooms || null,
+    hotel.booking_url || null, hotel.tripadvisor_id || null, hotel.google_place_id || null,
+    hotel.booking_com_id || null, hotel.expedia_id || null, hotel.hotels_com_id || null,
+    hotel.agoda_id || null, hotel.featured ? 1 : 0, hotel.active ? 1 : 0
+  );
+  
+  return result.lastInsertRowid as number;
+}
+
+// Enhanced Neighborhood helper functions
+export function getNeighborhoodBySlug(slug: string): NeighborhoodWithLocation | undefined {
+  const db = getDatabase();
+  return db.prepare(`
+    SELECT * FROM neighborhoods_with_location 
+    WHERE slug = ? AND active = 1
+  `).get(slug) as NeighborhoodWithLocation | undefined;
+}
+
+export function getNeighborhoodsByCityWithFilters(cityId: number, filters?: NeighborhoodSearchFilters): NeighborhoodWithLocation[] {
+  const db = getDatabase();
+  let query = 'SELECT * FROM neighborhoods_with_location WHERE city_id = ? AND active = 1';
+  const params: any[] = [cityId];
+
+  if (filters?.price_level) {
+    query += ' AND price_level = ?';
+    params.push(filters.price_level);
+  }
+
+  if (filters?.walkability) {
+    query += ' AND walkability = ?';
+    params.push(filters.walkability);
+  }
+
+  if (filters?.safety) {
+    query += ' AND safety = ?';
+    params.push(filters.safety);
+  }
+
+  if (filters?.transit_access) {
+    query += ' AND transit_access = ?';
+    params.push(filters.transit_access);
+  }
+
+  if (filters?.featured !== undefined) {
+    query += ' AND featured = ?';
+    params.push(filters.featured ? 1 : 0);
+  }
+
+  query += ' ORDER BY featured DESC, name ASC';
+
+  return db.prepare(query).all(...params) as NeighborhoodWithLocation[];
+}
+
+export function getNeighborhoodWithTags(slug: string): NeighborhoodWithTags | undefined {
+  const neighborhood = getNeighborhoodBySlug(slug);
+  if (!neighborhood) return undefined;
+
+  const tags = getNeighborhoodTags(neighborhood.id);
+  
+  // Cast to proper type since the database query includes all fields
+  const fullNeighborhood = neighborhood as any;
+  
+  return {
+    ...neighborhood,
+    description: neighborhood.description || '',
+    tags,
+    characteristics_parsed: parseCharacteristics(fullNeighborhood.characteristics),
+    best_for_parsed: parseBestFor(fullNeighborhood.best_for),
+    featured: fullNeighborhood.featured ?? false,
+    active: fullNeighborhood.active ?? true
+  };
+}
+
+export function getNeighborhoodTags(neighborhoodId: number): NeighborhoodTag[] {
+  const db = getDatabase();
+  return db.prepare(`
+    SELECT nt.*
+    FROM neighborhood_tags nt
+    JOIN neighborhood_neighborhood_tags nnt ON nt.id = nnt.tag_id
+    WHERE nnt.neighborhood_id = ?
+    ORDER BY nt.category, nt.name
+  `).all(neighborhoodId) as NeighborhoodTag[];
+}
+
+export function getNeighborhoodStats(neighborhoodId: number): NeighborhoodStats {
+  const db = getDatabase();
+  
+  // Get venue counts by category
+  const venueStats = db.prepare(`
+    SELECT 
+      category,
+      COUNT(*) as count
+    FROM venues 
+    WHERE neighborhood = (
+      SELECT name FROM neighborhoods WHERE id = ?
+    ) AND active = 1
+    GROUP BY category
+    ORDER BY count DESC
+  `).all(neighborhoodId) as Array<{ category: string; count: number }>;
+
+  // Get hotel count for the city (neighborhoods don't directly have hotels)
+  const hotelCount = db.prepare(`
+    SELECT COUNT(*) as count
+    FROM hotels 
+    WHERE city_id = (
+      SELECT city_id FROM neighborhoods WHERE id = ?
+    ) AND active = 1
+  `).get(neighborhoodId) as { count: number };
+
+  // Calculate stats
+  const totalVenues = venueStats.reduce((sum, stat) => sum + stat.count, 0);
+  const restaurantCount = venueStats.find(s => s.category.toLowerCase().includes('restaurant'))?.count || 0;
+  const barCount = venueStats.find(s => s.category.toLowerCase().includes('bar'))?.count || 0;
+  const cafeCount = venueStats.find(s => s.category.toLowerCase().includes('cafe'))?.count || 0;
+  const activityCount = venueStats.find(s => s.category.toLowerCase().includes('activit'))?.count || 0;
+
+  return {
+    venue_count: totalVenues,
+    hotel_count: hotelCount.count,
+    restaurant_count: restaurantCount,
+    bar_count: barCount,
+    cafe_count: cafeCount,
+    activity_count: activityCount,
+    avg_price_level: 2.5, // TODO: Calculate from actual venue data
+    top_categories: venueStats.slice(0, 5)
+  };
+}
+
+export function getFeaturedNeighborhoods(limit = 10): NeighborhoodWithLocation[] {
+  const db = getDatabase();
+  return db.prepare(`
+    SELECT * FROM neighborhoods_with_location 
+    WHERE featured = 1 AND active = 1 
+    ORDER BY city_name, name 
+    LIMIT ?
+  `).all(limit) as NeighborhoodWithLocation[];
+}
+
+export function searchNeighborhoods(query: string, cityId?: number): NeighborhoodWithLocation[] {
+  const db = getDatabase();
+  let sql = `
+    SELECT * FROM neighborhoods_with_location 
+    WHERE active = 1 AND (
+      name LIKE ? OR 
+      description LIKE ? OR
+      characteristics LIKE ? OR
+      best_for LIKE ?
+    )
+  `;
+  const searchTerm = `%${query}%`;
+  const params: (string | number)[] = [searchTerm, searchTerm, searchTerm, searchTerm];
+
+  if (cityId) {
+    sql += ' AND city_id = ?';
+    params.push(cityId);
+  }
+
+  sql += ' ORDER BY featured DESC, name ASC LIMIT 20';
+
+  return db.prepare(sql).all(...params) as NeighborhoodWithLocation[];
 }

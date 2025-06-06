@@ -29,18 +29,27 @@ export class GooglePlacesClient {
     await googleRateLimiter.consume(1);
     
     try {
-      const response = await this.client.get('/textsearch/json', {
-        params: {
-          query: `${query} ${location}`,
-          key: this.apiKey,
-          type: 'establishment',
-          region: 'us'
-        }
-      });
+      const url = `/textsearch/json`;
+      const params = {
+        query: `${query} in ${location}`,
+        key: this.apiKey,
+      };
+      
+      console.log('Google API request:', { url, params: { ...params, key: '***' } });
+      
+      const response = await this.client.get(url, { params });
+      
+      console.log('Google API response status:', response.data.status);
+      console.log('Google API results count:', response.data.results?.length || 0);
+      
+      if (response.data.status !== 'OK' && response.data.status !== 'ZERO_RESULTS') {
+        console.error('Google API error status:', response.data.status);
+        console.error('Error message:', response.data.error_message);
+      }
 
       return response.data.results || [];
-    } catch (error) {
-      console.error('Google Places API error:', error);
+    } catch (error: any) {
+      console.error('Google Places API error:', error.response?.data || error.message);
       return [];
     }
   }
