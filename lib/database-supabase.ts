@@ -241,15 +241,7 @@ export async function getVenuesByCity(cityId: number, limit?: number) {
   
   if (error) throw error;
   
-  // Transform to match expected format
-  return (data || []).map(venue => ({
-    ...venue,
-    city_name: venue.cities.name,
-    city_slug: venue.cities.slug,
-    state_name: venue.states.name,
-    state_code: venue.states.code,
-    state_slug: venue.states.slug
-  }));
+  return data || [];
 }
 
 export async function getCapitalCities() {
@@ -297,8 +289,8 @@ export async function getNeighborhoodsByCity(cityId: number) {
     .from('neighborhoods')
     .select(`
       *,
-      
-      
+      cities!inner(name, slug),
+      states!cities(name, code, slug)
     `)
     .eq('city_id', cityId)
     .order('name');
@@ -321,8 +313,8 @@ export async function searchVenuesByCity(cityId: number, query: string) {
     .from('venues')
     .select(`
       *,
-      
-      
+      cities!inner(name, slug),
+      states!cities(name, code, slug)
     `)
     .eq('city_id', cityId)
     .or(`name.ilike.%${query}%,description.ilike.%${query}%,category.ilike.%${query}%`)
@@ -355,7 +347,11 @@ export function seedDatabase() {
 export async function getVenuesByCityAndCategory(cityId: number, category: string) {
   const { data, error } = await supabase
     .from('venues')
-    .select('*')
+    .select(`
+      *,
+      cities!inner(name, slug),
+      states!cities(name, code, slug)
+    `)
     .eq('city_id', cityId)
     .eq('category', category)
     .eq('active', true)
@@ -389,8 +385,8 @@ export async function getVenuesByCityAndNeighborhood(cityId: number, neighborhoo
     .from('venues')
     .select(`
       *,
-      
-      
+      cities!inner(name, slug),
+      states!cities(name, code, slug)
     `)
     .eq('city_id', cityId)
     .eq('neighborhood_id', neighborhood.id)
@@ -415,8 +411,8 @@ export async function getNeighborhoodBySlug(slug: string) {
     .from('neighborhoods')
     .select(`
       *,
-      
-      
+      cities!inner(name, slug),
+      states!cities(name, code, slug)
     `)
     .eq('slug', slug)
     .eq('active', true)
@@ -442,8 +438,8 @@ export async function getNeighborhoodsByCityWithFilters(cityId: number, filters?
     .from('neighborhoods')
     .select(`
       *,
-      
-      
+      cities!inner(name, slug),
+      states!cities(name, code, slug)
     `)
     .eq('city_id', cityId)
     .eq('active', true);
@@ -584,8 +580,8 @@ export async function getFeaturedNeighborhoods(limit = 10) {
     .from('neighborhoods')
     .select(`
       *,
-      
-      
+      cities!inner(name, slug),
+      states!cities(name, code, slug)
     `)
     .eq('featured', true)
     .eq('active', true)
@@ -610,8 +606,8 @@ export async function searchNeighborhoods(query: string, cityId?: number) {
     .from('neighborhoods')
     .select(`
       *,
-      
-      
+      cities!inner(name, slug),
+      states!cities(name, code, slug)
     `)
     .eq('active', true)
     .or(`name.ilike.%${query}%,description.ilike.%${query}%,characteristics.ilike.%${query}%,best_for.ilike.%${query}%`);
@@ -656,8 +652,8 @@ export async function getHotelsByCity(cityId: number, filters?: HotelSearchFilte
     .from('hotels')
     .select(`
       *,
-      
-      
+      cities!inner(name, slug),
+      states!cities(name, code, slug)
     `)
     .eq('city_id', cityId)
     .eq('active', true);
@@ -709,8 +705,8 @@ export async function getHotelBySlug(slug: string) {
     .from('hotels')
     .select(`
       *,
-      
-      
+      cities!inner(name, slug),
+      states!cities(name, code, slug)
     `)
     .eq('slug', slug)
     .eq('active', true)
@@ -736,8 +732,8 @@ export async function getHotelById(id: number) {
     .from('hotels')
     .select(`
       *,
-      
-      
+      cities!inner(name, slug),
+      states!cities(name, code, slug)
     `)
     .eq('id', id)
     .eq('active', true)
@@ -797,8 +793,8 @@ export async function getFeaturedHotels(limit = 10) {
     .from('hotels')
     .select(`
       *,
-      
-      
+      cities!inner(name, slug),
+      states!cities(name, code, slug)
     `)
     .eq('featured', true)
     .eq('active', true)
@@ -823,8 +819,8 @@ export async function getHotelsByPriceRange(priceRange: 'budget' | 'mid-range' |
     .from('hotels')
     .select(`
       *,
-      
-      
+      cities!inner(name, slug),
+      states!cities(name, code, slug)
     `)
     .eq('price_range', priceRange)
     .eq('active', true)
@@ -849,8 +845,8 @@ export async function searchHotels(query: string, cityId?: number) {
     .from('hotels')
     .select(`
       *,
-      
-      
+      cities!inner(name, slug),
+      states!cities(name, code, slug)
     `)
     .eq('active', true)
     .or(`name.ilike.%${query}%,address.ilike.%${query}%,description.ilike.%${query}%`);
