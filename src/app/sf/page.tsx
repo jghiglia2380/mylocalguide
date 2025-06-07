@@ -31,11 +31,12 @@ export default function SanFranciscoPage() {
     
     try {
       console.log('Querying venues...');
+      // First try a simple query without joins
       const { data, error } = await supabase
         .from('venues')
-        .select('*, neighborhoods(name)')
+        .select('*')
         .eq('city_id', 1)
-        .order('aggregate_rating', { ascending: false });
+        .limit(100);
       
       console.log('Query result:', { dataCount: data?.length, error });
       
@@ -52,9 +53,9 @@ export default function SanFranciscoPage() {
     setLoading(false);
   };
 
-  // Get neighborhood counts
+  // Get neighborhood counts (simplified for debugging)
   const neighborhoodCounts = venues.reduce((acc, venue) => {
-    const hood = venue.neighborhoods?.name || 'Other';
+    const hood = 'All SF'; // Simplified for now
     acc[hood] = (acc[hood] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
@@ -66,10 +67,8 @@ export default function SanFranciscoPage() {
     return acc;
   }, {} as Record<string, number>);
 
-  // Filter venues by neighborhood
-  const filteredVenues = selectedNeighborhood === 'all' 
-    ? venues 
-    : venues.filter(v => v.neighborhoods?.name === selectedNeighborhood);
+  // Filter venues by neighborhood (simplified for debugging)
+  const filteredVenues = venues;
 
   if (loading) {
     return <div className="text-center py-12">Loading...</div>;
