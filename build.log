@@ -1,0 +1,128 @@
+
+> mylocalguide@0.1.0 build
+> next build && next-sitemap
+
+   ▲ Next.js 15.3.2
+   - Environments: .env.local
+
+   Creating an optimized production build ...
+ ⚠ Compiled with warnings in 1000ms
+
+./node_modules/@supabase/realtime-js/dist/main/RealtimeClient.js
+Critical dependency: the request of a dependency is an expression
+
+Import trace for requested module:
+./node_modules/@supabase/realtime-js/dist/main/RealtimeClient.js
+./node_modules/@supabase/realtime-js/dist/main/index.js
+./node_modules/@supabase/supabase-js/dist/module/index.js
+./src/app/api/budget-scraping/route.ts
+
+ ✓ Compiled successfully in 1000ms
+   Skipping validation of types
+   Skipping linting
+   Collecting page data ...
+(node:38576) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+(node:38572) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+(node:38577) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+(node:38574) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+(node:38575) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+(node:38573) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+(node:38578) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+   Generating static pages (0/43) ...
+   Generating static pages (10/43) 
+(node:38588) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+(node:38587) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+   Generating static pages (21/43) 
+   Generating static pages (32/43) 
+ ✓ Generating static pages (43/43)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                     Size  First Load JS
+┌ ƒ /                                          186 B         105 kB
+├ ○ /_not-found                                981 B         102 kB
+├ ƒ /[state]                                   186 B         105 kB
+├ ƒ /[state]/[city]                            230 B         101 kB
+├ ƒ /[state]/[city]/[category]                 186 B         105 kB
+├ ƒ /[state]/[city]/neighborhood/[slug]        186 B         105 kB
+├ ○ /admin/add-neighborhoods                 1.37 kB         106 kB
+├ ○ /admin/fix-venues                        1.28 kB         106 kB
+├ ○ /admin/scrape-sf                         1.97 kB         106 kB
+├ ○ /admin/smart-mapping                     1.46 kB         106 kB
+├ ○ /admin/smart-mapping-final               2.23 kB         107 kB
+├ ○ /admin/supabase                          1.52 kB         103 kB
+├ ƒ /api/add-missing-neighborhoods             230 B         101 kB
+├ ƒ /api/automation/generate-content           230 B         101 kB
+├ ƒ /api/automation/generate-seo               230 B         101 kB
+├ ƒ /api/automation/migrate                    230 B         101 kB
+├ ƒ /api/automation/scrape                     230 B         101 kB
+├ ƒ /api/automation/scrape-limited             230 B         101 kB
+├ ƒ /api/automation/scrape-sf-comprehensive    230 B         101 kB
+├ ƒ /api/automation/status                     230 B         101 kB
+├ ƒ /api/budget-scraping                       230 B         101 kB
+├ ƒ /api/check-neighborhoods                   230 B         101 kB
+├ ƒ /api/check-unmapped                        230 B         101 kB
+├ ƒ /api/check-venue-neighborhoods             230 B         101 kB
+├ ƒ /api/check-venues                          230 B         101 kB
+├ ƒ /api/create-neighborhoods                  230 B         101 kB
+├ ƒ /api/create-neighborhoods-smart            230 B         101 kB
+├ ƒ /api/debug                                 230 B         101 kB
+├ ƒ /api/debug-venues                          230 B         101 kB
+├ ƒ /api/fix-neighborhoods                     230 B         101 kB
+├ ƒ /api/fun-facts                             230 B         101 kB
+├ ƒ /api/scrape-all                            230 B         101 kB
+├ ƒ /api/scrape-multi-city                     230 B         101 kB
+├ ƒ /api/seed                                  230 B         101 kB
+├ ƒ /api/seed-hotels                           230 B         101 kB
+├ ƒ /api/seed-neighborhoods                    230 B         101 kB
+├ ƒ /api/seed-tiered-neighborhoods             230 B         101 kB
+├ ƒ /api/setup-fun-facts                       230 B         101 kB
+├ ƒ /api/smart-venue-mapping                   230 B         101 kB
+├ ƒ /api/supabase-migrate                      230 B         101 kB
+├ ƒ /api/test-budget                           230 B         101 kB
+├ ƒ /api/test-google                           230 B         101 kB
+├ ƒ /api/test-google-direct                    230 B         101 kB
+├ ○ /budget-scraping                         1.25 kB         102 kB
+├ ƒ /category/[slug]                           230 B         101 kB
+├ ƒ /neighborhood/[slug]                     1.73 kB         103 kB
+└ ○ /sf-venues                               37.1 kB         138 kB
++ First Load JS shared by all                 101 kB
+  ├ chunks/1684-23c5326c1a1521d2.js          45.9 kB
+  ├ chunks/4bd1b696-1e44b3116b0232b6.js      53.2 kB
+  └ other shared chunks (total)              1.92 kB
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
+✨ [next-sitemap] Loading next-sitemap config: file:///Users/justin/mylocalguide/next-sitemap.config.js
+✅ [next-sitemap] Generation completed
+┌───────────────┬────────┐
+│ (index)       │ Values │
+├───────────────┼────────┤
+│ indexSitemaps │ 1      │
+│ sitemaps      │ 1      │
+└───────────────┴────────┘
+-----------------------------------------------------
+ SITEMAP INDICES 
+-----------------------------------------------------
+
+   ○ https://mylocalguide.co/sitemap.xml
+
+
+-----------------------------------------------------
+ SITEMAPS 
+-----------------------------------------------------
+
+   ○ https://mylocalguide.co/sitemap-0.xml
+
+
