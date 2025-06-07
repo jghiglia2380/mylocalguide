@@ -62,3 +62,58 @@ export async function getTouristCities() {
   if (error) throw error;
   return data || [];
 }
+
+export async function getStateBySlug(slug: string) {
+  const { data, error } = await supabase.from('states').select('*').eq('slug', slug).single();
+  if (error && error.code !== 'PGRST116') throw error;
+  return data;
+}
+
+export async function getCitiesByState(stateCode: string) {
+  const { data, error } = await supabase.from('cities').select('*').eq('state_code', stateCode).order('name');
+  if (error) throw error;
+  return data || [];
+}
+
+export async function getVenuesByCityAndCategory(cityId: number, category: string) {
+  const { data, error } = await supabase
+    .from('venues')
+    .select('*')
+    .eq('city_id', cityId)
+    .eq('category', category)
+    .eq('active', true)
+    .limit(50000);
+  if (error) throw error;
+  return data || [];
+}
+
+export async function getHotelsByCity(cityId: number) {
+  const { data, error } = await supabase.from('hotels').select('*').eq('city_id', cityId).eq('active', true);
+  if (error) throw error;
+  return data || [];
+}
+
+export async function getVenuesByCityAndNeighborhood(cityId: number, neighborhoodName: string) {
+  const { data, error } = await supabase
+    .from('venues')
+    .select('*')
+    .eq('city_id', cityId)
+    .eq('active', true)
+    .limit(50000);
+  if (error) throw error;
+  return data || [];
+}
+
+export async function getNeighborhoodsByCity(cityId: number) {
+  const { data, error } = await supabase.from('neighborhoods').select('*').eq('city_id', cityId).order('name');
+  if (error) throw error;
+  return data || [];
+}
+
+export async function getNeighborhoodWithTags() {
+  return null;
+}
+
+export async function getNeighborhoodStats() {
+  return null;
+}

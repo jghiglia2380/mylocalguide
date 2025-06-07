@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { getStateBySlug, getCitiesByState } from '@lib/database-supabase';
+import { getStateBySlug, getCitiesByState } from '@lib/database-supabase-simple';
 
 export async function generateMetadata({ params }: { params: Promise<{ state: string }> }): Promise<Metadata> {
   const { state: stateSlug } = await params;

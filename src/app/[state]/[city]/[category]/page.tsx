@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { getCityBySlug, getVenuesByCityAndCategory, getHotelsByCity } from '@lib/database-supabase';
+import { getCityBySlug, getVenuesByCityAndCategory, getHotelsByCity } from '@lib/database-supabase-simple';
 // import HotelBookingWidget from '../../../components/HotelBookingWidget';
 
 const categoryInfo: Record<string, { plural: string; icon: string; description: string }> = {

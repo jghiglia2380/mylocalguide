@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { getCityBySlug, getVenuesByCityAndNeighborhood, getNeighborhoodsByCity, getNeighborhoodWithTags, getNeighborhoodStats } from '@lib/database-supabase';
+import { getCityBySlug, getVenuesByCityAndNeighborhood, getNeighborhoodsByCity, getNeighborhoodWithTags, getNeighborhoodStats } from '@lib/database-supabase-simple';
 import { SAFETY_COLORS, WALKABILITY_ICONS, TRANSIT_ICONS, PRICE_LEVEL_COLORS, parseCharacteristics, parseBestFor } from '@lib/types/neighborhood';
 
 export async function generateMetadata({ 
