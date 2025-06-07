@@ -92,6 +92,11 @@ export default function SanFranciscoPage() {
 
   return (
     <div className="min-h-screen bg-white">
+      {/* DEBUG BANNER - VISIBLE CONFIRMATION */}
+      <div style={{ background: 'yellow', padding: '10px', textAlign: 'center', fontFamily: 'monospace' }}>
+        🚧 DEBUG VERSION - {venues.length} venues loaded - Supabase: {supabase ? 'INIT' : 'FAIL'} - ENV: {process.env.NEXT_PUBLIC_SUPABASE_URL ? 'SET' : 'UNSET'}
+      </div>
+      
       {/* Header */}
       <header className="bg-white border-b border-gray-300 py-4">
         <div className="max-w-7xl mx-auto px-4 relative">

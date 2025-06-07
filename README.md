@@ -3,6 +3,8 @@
 ## Overview
 MyLocalGuide is a curated directory of San Francisco venues focusing on substance over style. Built with the John Rush directory methodology for maximum SEO effectiveness and minimal ongoing maintenance.
 
+**Current Status:** 25,000+ venues with comprehensive coverage across all SF neighborhoods and categories.
+
 ## Quick Start
 
 ### Development
