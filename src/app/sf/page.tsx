@@ -18,18 +18,23 @@ export default function SanFranciscoPage() {
 
   const loadVenues = async () => {
     if (!supabase) {
+      console.log('No Supabase client available');
       setLoading(false);
       return;
     }
     
     try {
-      const { data, error } = await supabase
+      console.log('Fetching venues from Supabase...');
+      const { data, error, count } = await supabase
         .from('venues')
-        .select('*')
+        .select('*', { count: 'exact' })
         .eq('city_id', 1);
+      
+      console.log('Supabase response:', { count, dataLength: data?.length, error });
       
       if (data) {
         setVenues(data);
+        console.log(`Successfully loaded ${data.length} venues`);
       }
       if (error) {
         console.error('Supabase error:', error);
