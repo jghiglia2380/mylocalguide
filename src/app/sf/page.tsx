@@ -92,6 +92,18 @@ export default function SanFranciscoPage() {
 
   return (
     <div className="min-h-screen bg-white">
+      {/* MASSIVE TEST BANNER */}
+      <div style={{ 
+        background: 'red', 
+        color: 'white', 
+        padding: '30px', 
+        textAlign: 'center', 
+        fontSize: '24px', 
+        fontWeight: 'bold' 
+      }}>
+        🚨 DEPLOYMENT TEST - IF YOU SEE THIS, VERCEL IS WORKING! 🚨
+      </div>
+      
       {/* DEBUG BANNER - VISIBLE CONFIRMATION */}
       <div style={{ background: 'yellow', padding: '10px', textAlign: 'center', fontFamily: 'monospace' }}>
         🚧 DEBUG VERSION - {venues.length} venues loaded - Supabase: {supabase ? 'INIT' : 'FAIL'} - ENV: {process.env.NEXT_PUBLIC_SUPABASE_URL ? 'SET' : 'UNSET'}
@@ -183,7 +195,7 @@ export default function SanFranciscoPage() {
             </div>
           </div>
           
-          <h1 className="text-4xl font-bold text-blue-600 mb-2">mylocalguide</h1>
+          <h1 className="text-4xl font-bold text-blue-600 mb-2">🚨 DEPLOYMENT TEST - mylocalguide</h1>
           <p className="text-lg text-gray-700">san francisco local discovery - substance over style</p>
           
           {/* Navigation */}
