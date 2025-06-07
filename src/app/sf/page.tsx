@@ -10,13 +10,20 @@ const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 const supabase = supabaseUrl && supabaseKey ? createClient(supabaseUrl, supabaseKey) : null;
 
 export default function SanFranciscoPage() {
+  console.log('🚀 SF PAGE COMPONENT INITIALIZING');
+  console.log('Environment check:', {
+    supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL,
+    hasSupabaseKey: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  });
+  
   const [venues, setVenues] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedNeighborhood, setSelectedNeighborhood] = useState('all');
   
-  console.log('SF Page: Loading with', venues.length, 'venues');
+  console.log('SF Page: venues state has', venues.length, 'venues');
 
   useEffect(() => {
+    console.log('📊 useEffect triggered - calling loadVenues');
     loadVenues();
   }, []);
 
@@ -71,7 +78,16 @@ export default function SanFranciscoPage() {
   const filteredVenues = venues;
 
   if (loading) {
-    return <div className="text-center py-12">Loading...</div>;
+    return (
+      <div className="text-center py-12">
+        <div>Loading venues...</div>
+        <div style={{fontSize: '12px', marginTop: '10px', color: '#666'}}>
+          Debug: Supabase URL = {process.env.NEXT_PUBLIC_SUPABASE_URL ? 'SET' : 'NOT SET'}<br/>
+          Debug: Supabase Key = {process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? 'SET' : 'NOT SET'}<br/>
+          Debug: Client = {supabase ? 'INITIALIZED' : 'FAILED'}
+        </div>
+      </div>
+    );
   }
 
   return (
