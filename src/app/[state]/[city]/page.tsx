@@ -22,7 +22,7 @@ export async function generateMetadata({ params }: { params: Promise<{ state: st
 
   return {
     title: `${city.name}, ${city.state_code} Local Guide - Best Restaurants, Cafes & Bars`,
-    description: `Discover the best local spots in ${city.name}, ${city.state_name}. Find authentic restaurants, cozy cafes, lively bars, and unique activities recommended by locals.`,
+    description: `Discover the best local spots in ${city.name}, ${city.state_code}. Find authentic restaurants, cozy cafes, lively bars, and unique activities recommended by locals.`,
     openGraph: {
       title: `${city.name} Local Guide`,
       description: `Your insider guide to ${city.name}'s best kept secrets`,
@@ -35,7 +35,7 @@ export default async function CityPage({ params }: { params: Promise<{ state: st
   const { state, city: citySlug } = await params;
   const city = await getCityBySlug(citySlug);
   
-  if (!city || city.state_slug !== state) {
+  if (!city) {
     notFound();
   }
 
