@@ -122,7 +122,7 @@ export default async function NeighborhoodPage({
               <div className="mb-6">
                 <h3 className="text-lg font-semibold text-amber-800 mb-2">Neighborhood Vibe</h3>
                 <div className="flex flex-wrap justify-center gap-2">
-                  {neighborhood.characteristics_parsed.map((characteristic, index) => (
+                  {neighborhood.characteristics_parsed.map((characteristic: string, index: number) => (
                     <span key={index} className="px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-sm">
                       {characteristic}
                     </span>
