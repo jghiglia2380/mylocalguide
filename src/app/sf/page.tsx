@@ -38,12 +38,11 @@ export default function SanFranciscoPage() {
     
     try {
       console.log('Querying venues...');
-      // First try a simple query without joins
+      // Query all venues for San Francisco 
       const { data, error } = await supabase
         .from('venues')
         .select('*')
-        .eq('city_id', 1)
-        .limit(100);
+        .eq('city_id', 1);
       
       console.log('Query result:', { dataCount: data?.length, error });
       
