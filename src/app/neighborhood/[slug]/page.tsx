@@ -1,4 +1,4 @@
-import { getDatabase, getVenuesByNeighborhood, getAllVenues } from '../../../../lib/database';
+import { getVenuesByNeighborhood, getAllVenues } from '../../../../lib/database-supabase';
 import { FunFactsDB } from '../../../../lib/fun-facts-db';
 import { FunFactsSection } from '../../../components/FunFactsSection';
 import { notFound } from 'next/navigation';
@@ -65,34 +65,20 @@ export async function generateMetadata({ params }: NeighborhoodPageProps): Promi
 
 export default async function NeighborhoodPage({ params }: NeighborhoodPageProps) {
   const { slug } = await params;
-  const db = getDatabase(); // Initialize database
   
   const neighborhoodName = neighborhoodMap[slug];
   if (!neighborhoodName) {
     notFound();
   }
 
-  const venues = getVenuesByNeighborhood(neighborhoodName);
-  const allVenues = getAllVenues();
+  const venues = await getVenuesByNeighborhood(neighborhoodName);
+  const allVenues = await getAllVenues();
 
   // Get neighborhood ID and fun facts
   let neighborhoodId: number | null = null;
   let funFacts: any[] = [];
   
-  try {
-    const neighborhoodStmt = db.prepare(`
-      SELECT id FROM neighborhoods WHERE name = ? OR name LIKE ?
-    `);
-    const neighborhood = neighborhoodStmt.get(neighborhoodName, `%${neighborhoodName}%`) as { id: number } | undefined;
-    
-    if (neighborhood) {
-      neighborhoodId = neighborhood.id;
-      const funFactsDB = new FunFactsDB(db);
-      funFacts = funFactsDB.getFactsByNeighborhood(neighborhoodId);
-    }
-  } catch (error) {
-    console.error('Error fetching fun facts:', error);
-  }
+  // TODO: Implement fun facts with Supabase
 
   // Group venues by category
   const venuesByCategory = venues.reduce((acc: any, venue: any) => {
@@ -228,7 +214,7 @@ export default async function NeighborhoodPage({ params }: NeighborhoodPageProps
                   <a href={`/neighborhood/${slug}`} className="directory-link">
                     {name}
                   </a>
-                  <span className="venue-info"> ({getVenuesByNeighborhood(name).length})</span>
+                  <span className="venue-info"></span>
                 </div>
               ))}
           </div>

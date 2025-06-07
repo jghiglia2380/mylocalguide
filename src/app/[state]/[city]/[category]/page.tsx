@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { getCityBySlug, getVenuesByCityAndCategory, getHotelsByCity } from '@lib/database';
+import { getCityBySlug, getVenuesByCityAndCategory, getHotelsByCity } from '@lib/database-supabase';
 // import HotelBookingWidget from '../../../components/HotelBookingWidget';
 
 const categoryInfo: Record<string, { plural: string; icon: string; description: string }> = {
@@ -38,7 +38,7 @@ export async function generateMetadata({
   params: Promise<{ state: string; city: string; category: string }> 
 }): Promise<Metadata> {
   const { state, city: citySlug, category } = await params;
-  const city = getCityBySlug(citySlug);
+  const city = await getCityBySlug(citySlug);
   const catInfo = categoryInfo[category];
   
   if (!city || !catInfo) {
@@ -62,7 +62,7 @@ export default async function CategoryPage({
   params: Promise<{ state: string; city: string; category: string }> 
 }) {
   const { state, city: citySlug, category } = await params;
-  const city = getCityBySlug(citySlug);
+  const city = await getCityBySlug(citySlug);
   const catInfo = categoryInfo[category];
   
   if (!city || city.state_slug !== state || !catInfo) {
@@ -70,8 +70,8 @@ export default async function CategoryPage({
   }
 
   // Get data based on category type
-  const venues = category === 'hotels' ? [] : getVenuesByCityAndCategory(city.id, category);
-  const hotels = category === 'hotels' ? getHotelsByCity(city.id) : [];
+  const venues = category === 'hotels' ? [] : await getVenuesByCityAndCategory(city.id, category);
+  const hotels = category === 'hotels' ? await getHotelsByCity(city.id) : [];
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-amber-50 to-orange-50">

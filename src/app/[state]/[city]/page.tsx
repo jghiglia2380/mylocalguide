@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { getCityBySlug, getVenuesByCity, getNeighborhoodsByCity, getNeighborhoodsByCityWithFilters } from '@lib/database';
+import { getCityBySlug, getVenuesByCity, getNeighborhoodsByCity, getNeighborhoodsByCityWithFilters } from '@lib/database-supabase';
 import { parseCharacteristics, parseBestFor, PRICE_LEVEL_COLORS } from '@lib/types/neighborhood';
 
 const categories = [
@@ -14,7 +14,7 @@ const categories = [
 
 export async function generateMetadata({ params }: { params: Promise<{ state: string; city: string }> }): Promise<Metadata> {
   const { state, city: citySlug } = await params;
-  const city = getCityBySlug(citySlug);
+  const city = await getCityBySlug(citySlug);
   
   if (!city) {
     return { title: 'City Not Found' };
@@ -33,14 +33,14 @@ export async function generateMetadata({ params }: { params: Promise<{ state: st
 
 export default async function CityPage({ params }: { params: Promise<{ state: string; city: string }> }) {
   const { state, city: citySlug } = await params;
-  const city = getCityBySlug(citySlug);
+  const city = await getCityBySlug(citySlug);
   
   if (!city || city.state_slug !== state) {
     notFound();
   }
 
-  const topVenues = getVenuesByCity(city.id, 12);
-  const allNeighborhoods = getNeighborhoodsByCityWithFilters(city.id);
+  const topVenues = await getVenuesByCity(city.id, 12);
+  const allNeighborhoods = await getNeighborhoodsByCityWithFilters(city.id);
   
   // Group neighborhoods by tier and region
   const majorNeighborhoods = allNeighborhoods.filter(n => (n as any).tier === 1);

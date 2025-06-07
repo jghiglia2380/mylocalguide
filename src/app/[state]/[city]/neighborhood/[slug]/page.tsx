@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { getCityBySlug, getVenuesByCityAndNeighborhood, getNeighborhoodsByCity, getNeighborhoodWithTags, getNeighborhoodStats } from '@lib/database';
+import { getCityBySlug, getVenuesByCityAndNeighborhood, getNeighborhoodsByCity, getNeighborhoodWithTags, getNeighborhoodStats } from '@lib/database-supabase';
 import { SAFETY_COLORS, WALKABILITY_ICONS, TRANSIT_ICONS, PRICE_LEVEL_COLORS, parseCharacteristics, parseBestFor } from '@lib/types/neighborhood';
 
 export async function generateMetadata({ 
@@ -10,8 +10,8 @@ export async function generateMetadata({
   params: Promise<{ state: string; city: string; slug: string }> 
 }): Promise<Metadata> {
   const { state, city: citySlug, slug } = await params;
-  const city = getCityBySlug(citySlug);
-  const neighborhoods = city ? getNeighborhoodsByCity(city.id) : [];
+  const city = await getCityBySlug(citySlug);
+  const neighborhoods = city ? await getNeighborhoodsByCity(city.id) : [];
   const neighborhood = neighborhoods.find(n => n.slug === slug);
   
   if (!city || !neighborhood) {
@@ -35,21 +35,21 @@ export default async function NeighborhoodPage({
   params: Promise<{ state: string; city: string; slug: string }> 
 }) {
   const { state, city: citySlug, slug } = await params;
-  const city = getCityBySlug(citySlug);
+  const city = await getCityBySlug(citySlug);
   
   if (!city || city.state_slug !== state) {
     notFound();
   }
 
-  const neighborhood = getNeighborhoodWithTags(slug);
+  const neighborhood = await getNeighborhoodWithTags(slug);
   
   if (!neighborhood || neighborhood.city_id !== city.id) {
     notFound();
   }
 
-  const venues = getVenuesByCityAndNeighborhood(city.id, neighborhood.name);
-  const neighborhoodStats = getNeighborhoodStats(neighborhood.id);
-  const allNeighborhoods = getNeighborhoodsByCity(city.id);
+  const venues = await getVenuesByCityAndNeighborhood(city.id, neighborhood.name);
+  const neighborhoodStats = await getNeighborhoodStats(neighborhood.id);
+  const allNeighborhoods = await getNeighborhoodsByCity(city.id);
 
   // Group venues by category
   const venuesByCategory = venues.reduce((acc, venue) => {

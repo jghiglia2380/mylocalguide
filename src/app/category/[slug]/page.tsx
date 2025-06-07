@@ -1,4 +1,4 @@
-import { getDatabase, getVenuesByCategory, getAllVenues } from '@lib/database';
+import { getVenuesByCategory, getAllVenues } from '../../../../lib/database-supabase';
 import { notFound } from 'next/navigation';
 
 // Force dynamic rendering to always fetch fresh data
@@ -27,15 +27,14 @@ const categoryMap: Record<string, string> = {
 
 export default async function CategoryPage({ params }: CategoryPageProps) {
   const { slug } = await params;
-  getDatabase(); // Initialize database
   
   const categoryName = categoryMap[slug];
   if (!categoryName) {
     notFound();
   }
 
-  const venues = getVenuesByCategory(categoryName);
-  const allVenues = getAllVenues();
+  const venues = await getVenuesByCategory(categoryName);
+  const allVenues = await getAllVenues();
 
   return (
     <div>
@@ -121,7 +120,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
                   <a href={`/category/${slug}`} className="directory-link">
                     {name}
                   </a>
-                  <span className="venue-info"> ({getVenuesByCategory(name).length})</span>
+                  <span className="venue-info"></span>
                 </div>
               ))}
           </div>

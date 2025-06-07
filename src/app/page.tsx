@@ -1,13 +1,13 @@
-import { getAllStates, getCapitalCities, getTouristCities } from '@lib/database';
+import { getAllStates, getCapitalCities, getTouristCities } from '@lib/database-supabase';
 import Link from 'next/link';
 
 // Force dynamic rendering to always fetch fresh data
 export const dynamic = 'force-dynamic';
 
-export default function Home() {
-  const states = getAllStates();
-  const capitalCities = getCapitalCities();
-  const touristCities = getTouristCities();
+export default async function Home() {
+  const states = await getAllStates();
+  const capitalCities = await getCapitalCities();
+  const touristCities = await getTouristCities();
 
   // Group states by region for better organization
   const regions = {

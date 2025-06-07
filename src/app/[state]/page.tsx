@@ -1,11 +1,11 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { getStateBySlug, getCitiesByState } from '@lib/database';
+import { getStateBySlug, getCitiesByState } from '@lib/database-supabase';
 
 export async function generateMetadata({ params }: { params: Promise<{ state: string }> }): Promise<Metadata> {
   const { state: stateSlug } = await params;
-  const state = getStateBySlug(stateSlug);
+  const state = await getStateBySlug(stateSlug);
   
   if (!state) {
     return { title: 'State Not Found' };
@@ -24,13 +24,13 @@ export async function generateMetadata({ params }: { params: Promise<{ state: st
 
 export default async function StatePage({ params }: { params: Promise<{ state: string }> }) {
   const { state: stateSlug } = await params;
-  const state = getStateBySlug(stateSlug);
+  const state = await getStateBySlug(stateSlug);
   
   if (!state) {
     notFound();
   }
 
-  const cities = getCitiesByState(state.code);
+  const cities = await getCitiesByState(state.code);
   const capitals = cities.filter(c => c.is_capital);
   const touristCities = cities.filter(c => c.is_major_tourist_city && !c.is_capital);
   const otherCities = cities.filter(c => !c.is_capital && !c.is_major_tourist_city);
