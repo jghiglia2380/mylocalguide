@@ -102,17 +102,17 @@ export default async function NeighborhoodPage({
               )}
               {neighborhood.walkability && (
                 <span className="px-4 py-2 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
-                  {WALKABILITY_ICONS[neighborhood.walkability]} {neighborhood.walkability} walkability
+                  {(WALKABILITY_ICONS as any)[neighborhood.walkability] || ''} {neighborhood.walkability} walkability
                 </span>
               )}
               {neighborhood.safety && (
-                <span className={`px-4 py-2 rounded-full text-sm font-medium ${SAFETY_COLORS[neighborhood.safety].bg} ${SAFETY_COLORS[neighborhood.safety].text}`}>
+                <span className={`px-4 py-2 rounded-full text-sm font-medium ${(SAFETY_COLORS as any)[neighborhood.safety]?.bg || 'bg-gray-100'} ${(SAFETY_COLORS as any)[neighborhood.safety]?.text || 'text-gray-700'}`}>
                   🛡️ {neighborhood.safety.replace('-', ' ')}
                 </span>
               )}
               {neighborhood.transit_access && (
                 <span className="px-4 py-2 bg-purple-100 text-purple-700 rounded-full text-sm font-medium">
-                  {TRANSIT_ICONS[neighborhood.transit_access]} {neighborhood.transit_access} transit
+                  {(TRANSIT_ICONS as any)[neighborhood.transit_access] || ''} {neighborhood.transit_access} transit
                 </span>
               )}
             </div>
