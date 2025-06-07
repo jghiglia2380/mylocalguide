@@ -75,8 +75,8 @@ export default async function NeighborhoodPage({ params }: NeighborhoodPageProps
   const allVenues = await getAllVenues();
 
   // Get neighborhood ID and fun facts
-  let neighborhoodId: number | null = null;
-  let funFacts: any[] = [];
+  const neighborhoodId: number | null = null;
+  const funFacts: any[] = [];
   
   // TODO: Implement fun facts with Supabase
 

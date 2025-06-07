@@ -96,7 +96,7 @@ export default async function NeighborhoodPage({
             {/* Neighborhood Metadata */}
             <div className="flex flex-wrap justify-center gap-4 mb-6">
               {neighborhood.price_level && (
-                <span className={`px-4 py-2 rounded-full text-sm font-medium ${PRICE_LEVEL_COLORS[neighborhood.price_level].bg} ${PRICE_LEVEL_COLORS[neighborhood.price_level].text}`}>
+                <span className={`px-4 py-2 rounded-full text-sm font-medium ${(PRICE_LEVEL_COLORS as any)[neighborhood.price_level]?.bg || 'bg-gray-100'} ${(PRICE_LEVEL_COLORS as any)[neighborhood.price_level]?.text || 'text-gray-700'}`}>
                   {neighborhood.price_level.replace('-', ' ')}
                 </span>
               )}
