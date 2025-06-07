@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { getCityBySlug, getVenuesByCity, getNeighborhoodsByCity, getNeighborhoodsByCityWithFilters } from '@lib/database-supabase';
+import { getCityBySlug, getVenuesByCity, getNeighborhoodsByCityWithFilters } from '@lib/database-supabase-simple';
 import { parseCharacteristics, parseBestFor, PRICE_LEVEL_COLORS } from '@lib/types/neighborhood';
 
 const categories = [

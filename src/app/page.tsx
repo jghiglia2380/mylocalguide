@@ -1,4 +1,4 @@
-import { getAllStates, getCapitalCities, getTouristCities } from '@lib/database-supabase';
+import { getAllStates, getCapitalCities, getTouristCities } from '@lib/database-supabase-simple';
 import Link from 'next/link';
 
 // Force dynamic rendering to always fetch fresh data
