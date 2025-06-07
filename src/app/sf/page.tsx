@@ -13,26 +13,38 @@ export default function SanFranciscoPage() {
   const [venues, setVenues] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedNeighborhood, setSelectedNeighborhood] = useState('all');
+  
+  console.log('SF Page: Loading with', venues.length, 'venues');
 
   useEffect(() => {
     loadVenues();
   }, []);
 
   const loadVenues = async () => {
+    console.log('loadVenues called, supabase client:', !!supabase);
+    
     if (!supabase) {
+      console.log('No supabase client available');
       setLoading(false);
       return;
     }
     
     try {
+      console.log('Querying venues...');
       const { data, error } = await supabase
         .from('venues')
         .select('*, neighborhoods(name)')
         .eq('city_id', 1)
         .order('aggregate_rating', { ascending: false });
       
+      console.log('Query result:', { dataCount: data?.length, error });
+      
       if (data) {
         setVenues(data);
+        console.log('Set venues:', data.length);
+      }
+      if (error) {
+        console.error('Supabase error:', error);
       }
     } catch (error) {
       console.error('Error loading venues:', error);
