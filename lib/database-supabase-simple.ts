@@ -2,23 +2,43 @@ import { supabase, supabaseAdmin } from './supabase';
 
 // Simple working version without broken JOINs
 export async function getVenuesByCity(cityId: number, limit?: number) {
-  let query = supabase
-    .from('venues')
-    .select('*')
-    .eq('city_id', cityId)
-    .eq('active', true)
-    .order('popularity_score', { ascending: false })
-    .order('aggregate_rating', { ascending: false });
-    
   if (limit) {
-    query = query.limit(limit);
-  } else {
-    query = query.limit(50000);
+    // If limit specified, use normal query
+    const { data, error } = await supabase
+      .from('venues')
+      .select('*')
+      .eq('city_id', cityId)
+      .eq('active', true)
+      .order('popularity_score', { ascending: false })
+      .order('aggregate_rating', { ascending: false })
+      .limit(limit);
+    if (error) throw error;
+    return data || [];
   }
   
-  const { data, error } = await query;
-  if (error) throw error;
-  return data || [];
+  // Get ALL venues using pagination to bypass 1000 limit
+  let allVenues: any[] = [];
+  let start = 0;
+  const pageSize = 1000;
+  
+  while (true) {
+    const { data, error } = await supabase
+      .from('venues')
+      .select('*')
+      .eq('city_id', cityId)
+      .eq('active', true)
+      .range(start, start + pageSize - 1);
+    
+    if (error) throw error;
+    if (!data || data.length === 0) break;
+    
+    allVenues = allVenues.concat(data);
+    
+    if (data.length < pageSize) break; // Last page
+    start += pageSize;
+  }
+  
+  return allVenues;
 }
 
 export async function getCityBySlug(slug: string) {
