@@ -24,7 +24,7 @@ export async function getVenuesByCity(cityId: number, limit?: number) {
   while (true) {
     const { data, error } = await supabase
       .from('venues')
-      .select('*')
+      .select('*, neighborhoods(id, name)')
       .eq('city_id', cityId)
       .eq('active', true)
       .range(start, start + pageSize - 1);
